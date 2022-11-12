@@ -1,7 +1,8 @@
 import * as React from "react";
 import { Button, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { useAuth } from "../providers/AuthProvider";
+import { useAuth } from "../providers/AuthContext";
+
 
 export function Logout() {
   const navigation = useNavigation();

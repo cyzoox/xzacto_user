@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { Text, ListItem } from "react-native-elements";
-import { useTasks } from "../providers/TasksProvider";
+
 import { ActionSheet } from "./ActionSheet";
 import { Task } from "../schemas";
+import { useStore } from "../providers/StoreContext";
 
 export function TaskItem({ task }) {
   const [actionSheetVisible, setActionSheetVisible] = useState(false);
 
-  const { deleteTask, setTaskStatus } = useTasks();
+  const { deleteTask, setTaskStatus } = useStore();
   const actions = [
     {
       title: "Delete",

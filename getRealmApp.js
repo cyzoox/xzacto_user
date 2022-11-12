@@ -1,11 +1,8 @@
 import Realm from "realm";
 
-let app;
-
-// Returns the shared instance of the Realm app.
-export function getRealmApp() {
-  if (app === undefined) {
-    // TODO: Create a Realm App instance with your Realm app ID.
-  }
-  return app;
-}
+// Invokes the shared instance of the Realm app.
+// place your RealmApp ID here
+const app = new Realm.App({ id: "xzacto-hcijg", timeout: 10000 });
+// Invokes the shared instance of the Realm app.
+// TODO: Create a Realm App instance with your Realm app ID.
+export default app;
