@@ -141,19 +141,25 @@ const printReceipt = async () => {
   },[]);
 
   const renderItem = ({ item }) => (
-    <ListItem containerStyle={{height: 15}} bottomDivider>
-                <ListItem.Content style={{flexDirection:'row', justifyContent:'space-between'}}>
-                    <Text>x{Math.round(item.quantity * 100) / 100}</Text>
+    <ListItem containerStyle={{height: 50}} bottomDivider>
+               <Text>x{Math.round(item.quantity * 100) / 100}</Text>
+                <ListItem.Content >
+           
                     <Text>{item.name}</Text>
-                    <Text style={{color: colors.statusBarCoverDark}}>{formatMoney(item.quantity * item.sprice, { symbol: "₱", precision: 2 })}</Text>
+                   
+                    <ListItem.Subtitle>
+                    <Text>with {item.addon}, {item.option}</Text>
+                    
+                    </ListItem.Subtitle>
                 </ListItem.Content>
+                <Text style={{color: colors.statusBarCoverDark}}>{formatMoney(item.quantity *( item.sprice + item.addon_price), { symbol: "₱", precision: 2 })}</Text>
             </ListItem>
   )
 
   const calculateTotal = () => {
     let total = 0;
     trdetails.forEach(list => {
-            total += list.quantity * list.sprice  
+            total += list.quantity * (list.sprice + list.addon_price)
     });
    return total;
 }

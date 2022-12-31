@@ -1,33 +1,25 @@
 import React,{useState} from 'react';
 import { TouchableOpacity, ImageBackground,StyleSheet, View, Text, Dimensions, Image, TouchableWithoutFeedback, ScrollView} from 'react-native';
 import { Button, Input, Overlay } from 'react-native-elements';
-import { FlatGrid } from 'react-native-super-grid';
 import { useAuth } from '../context/AuthContext';
 import { useStore } from '../context/StoreContext';
 import colors from '../themes/colors';
 import moment from 'moment'
 import formatMoney from 'accounting-js/lib/formatMoney.js'
 import { Categories } from './Categories';
-import { SimpleStepper } from 'react-native-simple-stepper';
 import Alert from './Alert'
-import uuid from 'react-native-uuid';
 import SearchInput, { createFilter } from 'react-native-search-filter';
 import { TextInput } from 'react-native-paper';
 import SearchBar from './SearchBar';
 import Feather from 'react-native-vector-icons/Feather'
 import FastImage from 'react-native-fast-image'
-import ProductCard from './ProductCard';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 const KEYS_TO_FILTERS = ['name', 'category'];
-import Modal from 'react-native-modal';
-import List from './List';
-import SubAlert from './SubAlert';
-import AlertwithChild from './AlertwithChild';
-import Spacer from './Spacer';
 import BigList from "react-native-big-list";
-import { useCallback } from 'react';
 
+import EvilIcons from 'react-native-vector-icons/EvilIcons'
+import Ionicons from 'react-native-vector-icons/Ionicons'
 export default function Products({ navigation, search,toggleSearch}) {
   const { user } = useAuth();
 
@@ -43,7 +35,10 @@ export default function Products({ navigation, search,toggleSearch}) {
     store_info,
     archiveInfo,
     onSaveList,
-     products_list
+     products_list,
+     inventory,
+     option,
+     addon
    } = useStore();
     const [overlay, overlayVisible] = useState(false);
     const [item, setItems] = useState([]);
@@ -51,11 +46,13 @@ export default function Products({ navigation, search,toggleSearch}) {
     const [quantity, setQuantity] = useState(1);
     const [alerts, alertVisible] = useState(false);
     const [alerts2, alertVisible2] = useState(false);
- 
-
-  
-
-  
+   const [product_info, setProductInfo] = useState([]);
+    const [additionals, setWithAdditional] = useState(false);
+    const [selectedVariant, setSelectedVariant] = useState({name:'', price:0, cost:0});
+    const [selectedAddon, setSelectedAddon] = useState({name:'', price:0, cost:0});
+    const [selectedOption, setSelectedOption] = useState([]);
+    const [total, setTotal] = useState(0)
+   const [aqty, setAqty] = useState(1)
    
     const setVariables = (itemss) => {
       setItems(itemss);
@@ -147,15 +144,73 @@ export default function Products({ navigation, search,toggleSearch}) {
         quantity: 1,
         uid: item.pr_id,
         timeStamp: moment().unix(),
+        addon: '',
+        addon_price: 0,
+        addon_cost: 0,
+        option: '',
+        withAddtional: false
       }
       onSaveList(list, user, store_info)
     }
+    const onSaveWithAddon = () => {
+      let list = {
+        _partition: `project=${user.id}`,
+        _id: product_info._id,
+        name: product_info.name + `, ${selectedVariant.name}`,
+        brand: product_info.brand,
+        oprice: selectedVariant.cost,
+        sprice: selectedVariant.price,
+        unit: product_info.unit,
+        category: product_info.category,
+        store_id: store_info._id,
+        store: product_info.store,
+        quantity: aqty,
+        uid: product_info.pr_id,
+        timeStamp: moment().unix(),
+        addon: selectedAddon.name,
+        addon_price: selectedAddon.price,
+        addon_cost: selectedAddon.cost,
+        option: selectedOption.option,
+        withAddtional: true
+      }
+      onSaveList(list, user, store_info)
+      setWithAdditional(false)
+      setAqty(1),
+      setSelectedAddon({name:'', price:0, cost:0})
+      setSelectedVariant({name:'', price:0, cost:0})
+      setSelectedOption({opton:''})
+    }
 
+const withAddtional = (item) => {
+  setWithAdditional(true)
+  setProductInfo(item)
+}
 
+const onselectVariant =(item) => {
+  if(item._id === selectedVariant._id){
+    setSelectedVariant({name:'', price:0, cost:0})
+    return;
+  }
+  setSelectedVariant(item)
+}
 
+const onselectAddon =(item) => {
+  if(item._id === selectedAddon._id){
+    setSelectedAddon({name:'', price:0, cost:0})
+    return;
+  }
+  setSelectedAddon(item)
+}
 
+const onselectOption =(item) => {
+  if(item._id === selectedOption._id){
+    setSelectedOption({opton:''})
+    return;
+  }
+  setSelectedOption(item)
+}
      const _renderitem = ({item}) => 
-      <TouchableWithoutFeedback onPress={()=> onSaveLists(item)} >
+      <TouchableWithoutFeedback onPress={()=> item.withAddons == true || item.withOptions == true || item.withVariants == true ? withAddtional(item): onSaveLists(item)} >
       <View style={styles.itemContainer}>
        <View >
        <FastImage
@@ -226,13 +281,144 @@ export default function Products({ navigation, search,toggleSearch}) {
       numColumns={3} // Set the number of columns
       renderItem={_renderitem}
       keyExtractor={item => item._id}
-      itemHeight={200}
+      itemHeight={180}
       headerHeight={90}
       footerHeight={100}
     />
  
+ <Overlay fullScreen isVisible={additionals} onBackdropPress={()=> setWithAdditional(false)}>       
    
-   
+      <View style={styles.header}>
+      <FastImage
+              style={styles.stretch2}
+             source={product_info.img === null || item.img === '' ? require('../../assets/noproduct.png') :{
+                 uri:  product_info.img,
+                 headers: { Authorization: 'auth-token' },
+                 priority: FastImage.priority.normal,
+             }}
+             resizeMode={FastImage.resizeMode.cover}
+         /> 
+       <View style={{position:'absolute', left: 20, top: 20, zIndex: 1}}>
+        <TouchableOpacity onPress={()=> setWithAdditional(false)}>
+              <EvilIcons name={'arrow-left'} size={45} color={colors.white}/>
+        </TouchableOpacity> 
+      </View>
+      </View>
+      <View style={{marginTop:20, flexDirection:'row', justifyContent:'space-between', alignItems:'center'}}>
+
+<View style={{flex:1}}>
+  <Text style={{fontSize: 20, marginLeft: 15}}>{product_info.name}sfws gewt wertwetyew</Text>
+  <Text style={{fontSize: 15, marginLeft: 15}}>{product_info.brand}</Text>
+</View>
+<View style={{marginRight: 10}}>
+  <View style={{flexDirection:"row", flex:1}}>
+   {aqty > 1 ?  <TouchableOpacity style={styles.plusBtn}>
+        <EvilIcons onPress={()=> setAqty(aqty-1)} name={'minus'} size={20} color={colors.white}/>
+     </TouchableOpacity>: null}
+     <Text style={{fontSize: 20, textAlign:'center', paddingHorizontal:15}}>{aqty}</Text>
+     <TouchableOpacity onPress={()=> setAqty(aqty+1)} style={styles.plusBtn}>
+        <EvilIcons name={'plus'} size={20} color={colors.white}/>
+     </TouchableOpacity>
+  </View>
+  <View>
+    <Text style={{textAlign:'center', fontSize: 20, fontWeight:'bold', color: colors.primary}}> {formatMoney((total + selectedVariant.price + selectedAddon.price)*aqty, { symbol: "₱", precision: 2 })}</Text>
+  </View>
+</View>
+</View>
+      <ScrollView style={{marginBottom: 50}}>
+    
+      <ScrollView horizontal>
+      {
+        product_info.withVariants && 
+        <View>
+        <Text style={{fontSize: 20, marginLeft: 15, marginTop: 20}}>Variants</Text>
+        <View style={{flexDirection:'row'}}>
+          {
+          inventory.map(item => 
+            product_info._id === item.product_id ?
+            <TouchableOpacity onPress={()=> onselectVariant(item)} style={selectedVariant._id === item._id ?[styles.additionalCard,{justifyContent:'center', alignItems:'center', padding: 15, width: windowWidth /3-20, borderWidth:1, borderColor: colors.primary}]:[styles.additionalCard,{justifyContent:'center', alignItems:'center', padding: 15, width: windowWidth /3-20}]}>
+              {selectedVariant._id === item._id ? <Ionicons name={'checkmark-circle'} size={20} color={colors.primary} style={{position:'absolute', top:5, right:5}}/>: null}
+              <Text>{item.name}</Text>
+              <Text style={{color: colors.accent, fontWeight: 'bold', marginTop:5}}>{formatMoney(item.price, { symbol: "₱", precision: 2 })}</Text>
+            </TouchableOpacity> : null
+          )
+          }
+          </View>
+      </View>
+      }
+      </ScrollView>
+      <ScrollView horizontal>
+      {
+        product_info.withAddons && 
+        <View>
+      <Text style={{fontSize: 20, marginLeft: 15, marginTop: 15}}>Addons</Text>
+      <View style={{flexDirection:'row'}}>
+         { 
+         addon.map(item => 
+            product_info._id === item.product_id ?
+            <TouchableOpacity onPress={()=> onselectAddon(item)}  style={selectedAddon._id === item._id ? [styles.additionalCard,{justifyContent:'center', alignItems:'center', padding: 15, width: windowWidth /3-20, borderWidth:1, borderColor: colors.primary}]:[styles.additionalCard,{justifyContent:'center', alignItems:'center', padding: 15, width: windowWidth /3-20}]}>
+                <Text>{item.name}</Text>
+              <Text style={{color: colors.accent, fontWeight: 'bold', marginTop:5}}>{formatMoney(item.price, { symbol: "₱", precision: 2 })}</Text>
+              {selectedAddon._id === item._id ? <Ionicons name={'checkmark-circle'} size={20} color={colors.primary} style={{position:'absolute', top:5, right:5}}/>: null}
+            </TouchableOpacity> : null
+          )
+          }
+          </View>
+          </View>
+      }
+          </ScrollView>
+
+     <ScrollView horizontal>
+      {
+        product_info.withOptions && 
+        <View>
+        <Text style={{fontSize: 20, marginLeft: 15, marginTop: 15}}>Options</Text>
+        <View style={{flexDirection:'row'}}>
+          {option.map(item => 
+            product_info._id === item.product_id ?
+            <TouchableOpacity onPress={()=> onselectOption(item)}  style={selectedOption._id === item._id ? [styles.additionalCard,{justifyContent:'center', alignItems:'center', padding: 15, width: windowWidth /3-20, borderWidth:1, borderColor: colors.primary}]:[styles.additionalCard,{justifyContent:'center', alignItems:'center', padding: 15, width: windowWidth /3-20}]}>
+             {selectedOption._id === item._id ? <Ionicons name={'checkmark-circle'} size={20} color={colors.primary} style={{position:'absolute', top:5, right:5}}/>: null}
+              <Text>{item.option}</Text>
+            </TouchableOpacity> : null
+          )}
+          </View>
+          </View>
+      }
+           </ScrollView>
+      </ScrollView>
+      <View
+      style={{
+        flex: 1,
+        marginBottom: 16,
+        justifyContent: "flex-end",
+      }}
+    >
+      <TouchableOpacity
+        style={{
+          height: 50,
+          borderRadius: 12,
+          width: windowWidth * 0.9,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colors.primary,
+          shadowRadius: 12,
+          shadowOpacity: 0.5,
+          shadowColor: "#805bfa",
+          shadowOffset: {
+            width: 0,
+            height: 3,
+          },
+        }}
+        onPress={()=>onSaveWithAddon()}
+      >
+        <Text style={{ color: "#fff", fontFamily: "Roboto-Bold" }}>
+          Add to Cart
+        </Text>
+      </TouchableOpacity>
+ 
+    </View>
+    </Overlay>
+      
   
     <Overlay overlayStyle={{ width: "80%", borderRadius: 10, padding: 20 }} isVisible={overlay} onBackdropPress={overlayVisible}>
       <Text style={{textAlign:'center', fontSize: 20, fontWeight:'bold'}}>Quantity of {item.name} </Text>
@@ -266,7 +452,54 @@ export default function Products({ navigation, search,toggleSearch}) {
 }
 
 const styles = StyleSheet.create({
-
+  plusBtn:{
+    backgroundColor:colors.accent,
+    justifyContent:"center",
+    alignItems:"center",
+    borderRadius: 15,
+    height: 30,
+    width:30,
+    shadowColor: "#EBECF0",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+     
+    },
+    shadowOpacity: 0.89,
+    shadowRadius: 2,
+    elevation: 5,
+  },
+ minusBtn:{
+    backgroundColor:colors.white,
+    justifyContent:"center",
+    alignItems:"center",
+    borderRadius: 15,
+    height: 45,
+    width:45,
+    shadowColor: "#EBECF0",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+     
+    },
+    shadowOpacity: 0.89,
+    shadowRadius: 2,
+    elevation: 5,
+  },
+  header: {
+    backgroundColor: colors.white,
+    shadowColor: "#EBECF0",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+     
+    },
+    shadowOpacity: 0.89,
+    shadowRadius: 2,
+    elevation: 5,
+    borderRadius: 10,
+    zIndex:0
+  },
   itemContainer: {
     flex:1,
     marginTop: 5,
@@ -283,7 +516,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.89,
     shadowRadius: 2,
     elevation: 5,
- 
+    marginBottom: 10
+  },
+  additionalCard: {
+    flex:1,
+    marginTop: 5,
+    marginHorizontal: 5,
+    backgroundColor: colors.white, 
+    flexDirection: 'column',
+    borderRadius: 15,
+    shadowColor: "#EBECF0",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+     
+    },
+    shadowOpacity: 0.89,
+    shadowRadius: 2,
+    elevation: 5,
+    marginBottom: 10
   },
   itemName: {
     fontSize: 14,
@@ -301,6 +552,11 @@ const styles = StyleSheet.create({
     height: 100,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10
+  },
+  stretch2: {
+    width: windowWidth-20,
+    height: windowHeight /3 - 20,
+    borderRadius: 10,
   },
   iconStyle: {
     fontSize: 25,

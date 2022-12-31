@@ -67,7 +67,7 @@ export default function List({ navigation, clearAll, archive, screen, toggleScan
   const calculateTotal = () => {
     let total = 0;
     products_list.forEach(list => {
-            total += list.quantity * list.sprice  
+            total += list.quantity *( list.sprice + list.addon_price)
     });
    return total;
 }
@@ -80,6 +80,7 @@ export default function List({ navigation, clearAll, archive, screen, toggleScan
         <View style={{ flex: 1, alignSelf: 'flex-start', flexDirection: 'row', backgroundColor:colors.white, paddingVertical: 10, justifyContent:'space-evenly' }}>
         <View style={[styles.cellContainer, {flex: 2}]}>
              <Text style={styles.cellStyle}>{item.name}</Text>
+           {item.withAddtional === true ? <Text style={[styles.cellStyle,{ fontSize:10}]}>with {item.addon}, {item.option}</Text>: null}
         </View>
         <View style={[styles.cellContainer, {flex: 2.5}]}>
             <View style={{flexDirection:'row',  alignItems:'center'}}>
@@ -116,7 +117,7 @@ export default function List({ navigation, clearAll, archive, screen, toggleScan
             </View>
         </View>
         <View style={styles.cellContainer}>
-          <Text style={styles.cellStyle}>{formatMoney(item.quantity * item.sprice, { symbol: "₱", precision: 2 })}</Text>
+          <Text style={styles.cellStyle}>{formatMoney(item.quantity *( item.sprice+ item.addon_price), { symbol: "₱", precision: 2 })}</Text>
         </View>
     </View>
     );
@@ -240,7 +241,7 @@ const styles = StyleSheet.create({
 },
 cellStyle : {
       textAlign:'center',
-      paddingVertical: 5,
+
       fontSize: 13,
       fontWeight:'400',
       color: colors.black

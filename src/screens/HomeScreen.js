@@ -73,6 +73,7 @@ const HomeScreen = ({ navigation }) => {
 
 
   const onClickPay = () => {
+
     if(stores[0].attendant === ""){
       alertVisible(true);
       return;
@@ -125,7 +126,7 @@ const HomeScreen = ({ navigation }) => {
   const calculateTotal = () => {
     let total = 0;
     products_list.forEach(list => {
-            total += list.quantity * list.sprice  
+            total += list.quantity * (list.sprice  + list.addon_price)
     });
    return total;
   }
@@ -181,7 +182,7 @@ const onCancelCustomDisc = () => {
       <View style={{flex: 1, backgroundColor:'white'}}>
         
         <Loader loading={loading}/>
-            
+        <Alert visible={alerts} onCancel={()=> alertVisible(false)} onProceed={()=> alertVisible(false)} title="No attendant" content="Please login first." confirmTitle="OK"/>
         <Alert visible={visible} onCancel={onCancel} onProceed={onProceed} title="Archive List?" content="Are you sure you want to archive current list?" confirmTitle="Proceed"/>
         <Alert visible={clear} onCancel={onCancelClear} onProceed={onClear} title="Clear List?" content="Are you sure you want to clear current list?" confirmTitle="Proceed"/>
         <Alert visible={notArchive} onCancel={onCancelArchive} onProceed={onCancelArchive} title="Existing Archive List!" content="There is an existing archive list, please delete the existing achive first before you proceed." confirmTitle="OK"/>

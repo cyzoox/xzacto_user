@@ -55,7 +55,7 @@ const AmountKeys = ({cashReceive, Change, discount, setCreditVisible, onSaveTran
     const calculateTotal = () => {
       let total = 0;
       products_list.forEach(list => {
-              total += list.quantity * list.sprice  
+              total += list.quantity * (list.sprice + list.addon_price)
       });
      return total;
   }

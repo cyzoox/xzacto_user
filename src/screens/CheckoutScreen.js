@@ -106,7 +106,7 @@ const CheckoutScreen = ({ navigation, route }) => {
   const calculateTotal = () => {
     let total = 0;
     products_list.forEach(list => {
-            total += list.quantity * list.sprice  
+            total += list.quantity *( list.sprice + list.addon_price)
     });
    return total;
 }
@@ -222,6 +222,7 @@ const calculateTotalItems = () => {
 
   const onCancelCustomDisc = () => {
     setDiscountVisible(false)
+    setSelected(0)
   }
 
 
@@ -230,7 +231,7 @@ const calculateTotalItems = () => {
          <Alert visible={nocustomer} onCancel={onCancelNoCus} onProceed={onProceedNoCus} title="No selected customer" content="For Credit transactions you need to select customer." confirmTitle="OK"/>
          <Alert visible={creditVisible} onCancel={onCancelCredit} onProceed={onProceedCredit} title="Proceed credit payment?" content="Are you sure you want to proceed with credit payment?" confirmTitle="Proceed"/>
          <Alert visible={alerts} onCancel={onCancelAlert} onProceed={onCancelAlert} title="Insufficient Payment" content="Cash receive is lesser than the total amount." confirmTitle="OK"/>
-         <AlertwithChild visible={discountVisible} onCancel={onCancelCustomDisc} onProceed={onCancelCustomDisc} title="Choose Discount"  confirmTitle="S A V E">
+         <AlertwithChild visible={discountVisible} onCancel={onCancelCustomDisc} onProceed={()=> setDiscountVisible(false)} title="Choose Discount"  confirmTitle="S A V E">
          <View style={{flexDirection:'row',justifyContent:'space-evenly', marginVertical: 2, alignItems:'center'}}>
           <Text style={{textAlign:'center', fontSize: 14, fontWeight: '700'}}>Discount Name : </Text>
             <View style={{flexDirection:'row', marginVertical: 2, alignItems:'center'}}>

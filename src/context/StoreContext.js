@@ -32,6 +32,10 @@ const StoreProvider = ({ children, projectPartition, store_info, currency }) => 
     const today = moment().unix();
     const [products_list, setProductss] = useState([]);
     const [cart, setLists] = useState([])
+    const [inventory, setInventory] = useState([]);
+    const [option, setOption] = useState([]);
+    const [addon, setAddon] = useState([]);
+
   useEffect(() => {
 
     const OpenRealmBehaviorConfiguration = {
@@ -160,7 +164,23 @@ const StoreProvider = ({ children, projectPartition, store_info, currency }) => 
       });
 
      
-   
+      const syncInventory = projectPOS.objects("Inventory");
+      setInventory([...syncInventory]);
+      syncInventory.addListener(() => {
+        setInventory([...syncInventory]);
+      });
+
+      const syncAddon = projectPOS.objects("Addon");
+      setAddon([...syncAddon]);
+      syncAddon.addListener(() => {
+        setAddon([...syncAddon]);
+      });
+
+      const syncOption = projectPOS.objects("Option");
+      setOption([...syncOption]);
+      syncOption.addListener(() => {
+        setOption([...syncOption]);
+      });
 
     {
       /*   
@@ -501,7 +521,11 @@ const StoreProvider = ({ children, projectPartition, store_info, currency }) => 
         date: moment.unix(date).format('MMMM DD, YYYY'),
         status: 'Completed',
         attendant_name: name,
-        attendant_id: id
+        attendant_id: id,
+        addon: item.addon,
+        addon_price: item.addon_price,
+        addon_cost: item.addon_cost,
+        option: item.option,
       }
       projectPOS.write(() => {
         projectPOS.create(
@@ -868,9 +892,13 @@ const StoreProvider = ({ children, projectPartition, store_info, currency }) => 
       category: items.category,
       store_id: store_info._id,
       store: items.store,
-      quantity: 1,
+      quantity: items.quantity,
       uid: items.uid,
       timeStamp: moment().unix(),
+      addon: items.addon,
+      addon_price: items.addon_price,
+      addon_cost: items.addon_cost,
+      option: items.option
   }
  
 
@@ -880,18 +908,41 @@ const StoreProvider = ({ children, projectPartition, store_info, currency }) => 
         setProductss([...products_list, list])
    
   }else{
-    setProductss(
-      products_list.map((x) => {
-     
-        if (x._id === items._id)
-          return {
-            ...x,
-            quantity: x.quantity + 1,
-            _id : x._id
-          };
-        return x;
-      })
-    );
+    if(items.withAddtional){
+      setProductss(
+        products_list.map((x) => {
+       
+          if (x._id === items._id)
+            return {
+              ...x,
+              quantity: items.quantity,
+              _id : x._id,
+              name: items.name,
+              addon: items.addon,
+              oprice: items.oprice,
+              sprice: items.sprice,
+              addon_price: items.addon_price,
+              addon_cost: items.addon_cost,
+              option: items.option
+            };
+          return x;
+        })
+      );
+    }else{
+      setProductss(
+        products_list.map((x) => {
+       
+          if (x._id === items._id)
+            return {
+              ...x,
+              quantity: x.quantity + 1,
+              _id : x._id
+            };
+          return x;
+        })
+      );
+    }
+ 
   }
 
   }
@@ -986,7 +1037,10 @@ const StoreProvider = ({ children, projectPartition, store_info, currency }) => 
             products_list,
             incrementQty,
             decrementQty,
-            deleteItem
+            deleteItem,
+            addon,
+            option,
+            inventory
           }}
         >
             {children}

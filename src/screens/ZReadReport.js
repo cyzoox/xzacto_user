@@ -158,7 +158,7 @@ const filterByCategory = () => {
         });
         if(o.status === "Completed"){
         item.quantity += o.quantity;
-        item.total += o.quantity * o.sprice;
+        item.total += o.quantity * (o.sprice+o.addon_price);
         item.category = o.category;
         }
         return r.set(key, item);
@@ -444,7 +444,7 @@ const calculateTotalExpenses = () => {
                   <Divider/>
                   {
                       transactions.map(item => 
-                        item.status === "Completed" &&
+                        item.status === "Completed" && item.discount !== 0 &&
                         <View style={{flexDirection:'row',justifyContent:'space-between', paddingVertical: 2}}>
                             <View >
                             <Text style={{width: 100, textAlign: 'center'}}>{item.discount_name}</Text>

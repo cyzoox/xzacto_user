@@ -30,7 +30,7 @@ const AlertwithChild = ({ visible, onProceed, onCancel,title,  confirmTitle, chi
                 </View>
                 <View style={{flexDirection: 'row', justifyContent:'space-between',marginHorizontal: 15}}>
                     <TouchableHighlight
-                    style={{ ...styles.openButton, backgroundColor: colors.grey }}
+                    style={{ ...styles.openButton, backgroundColor: colors.accent }}
                     onPress={onCancel}
                     >
                     <Text style={styles.textStyle}> Cancel </Text>

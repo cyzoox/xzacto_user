@@ -30,13 +30,13 @@ const Alert = ({ visible, onProceed, onCancel, title, content, confirmTitle }) =
                 </View>
                 <View style={{flexDirection: 'row', justifyContent:'space-between',marginHorizontal: 15}}>
                     <TouchableHighlight
-                    style={{ ...styles.openButton, backgroundColor: colors.red }}
+                    style={{ ...styles.openButton, backgroundColor: colors.accent }}
                     onPress={onCancel}
                     >
                     <Text style={styles.textStyle}> Cancel </Text>
                     </TouchableHighlight>
                     <TouchableHighlight
-                    style={{ ...styles.openButton, backgroundColor: colors.accent }}
+                    style={{ ...styles.openButton, backgroundColor: colors.primary }}
                     onPress={onProceed}
                     >
                     <Text style={styles.textStyle}> {confirmTitle} </Text>
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     elevation: 5
   },
   openButton: {
-    backgroundColor: "#F194FF",
+ 
     borderRadius: 20,
     padding: 8,
     elevation: 2

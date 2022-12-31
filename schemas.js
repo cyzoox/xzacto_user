@@ -809,7 +809,11 @@ class TR_Details {
     product_id,
     status,
     attendant_name,
-    attendant_id
+    attendant_id,
+    addon,
+    addon_price,
+    addon_cost,
+    option
   }) {
     this._partition = partition;
     this._id = id;
@@ -831,7 +835,11 @@ class TR_Details {
     this.product_id = product_id,
     this.status = status,
     this.attendant_name = attendant_name,
-    this.attendant_id = attendant_id
+    this.attendant_id = attendant_id,
+    this.addon = addon,
+    this.addon_price = addon_price,
+    this.addon_cost = addon_cost,
+    this.option = option
   }
 
   
@@ -857,7 +865,11 @@ class TR_Details {
       timeStamp: 'int',
       status: 'string',
       attendant_name: "string",
-      attendant_id: "string"
+      attendant_id: "string",
+      addon: "string",
+      addon_price: "float",
+      addon_cost: "float",
+      option: "string",
     },
     primaryKey: "_id",
   };
@@ -991,5 +1003,132 @@ class Discount {
     primaryKey: "_id",
   };
 }
+class Inventory {
+  /**
+   *
+   * @param {string} name The name of the task
+   * @param {string status The status of the task. Default value is "Open"
+   * @param {ObjectId} id The ObjectId to create this task with
+   */
+  constructor({
+    partition,
+    id,
+    name,
+    cost,
+    price,
+    product_id
+   
+  }) {
+    this._partition = partition;
+    this._id = id;
+    this.name = name;
+    this.cost = cost;
+    this.price = price;
+    this.product_id = product_id
+   
+  }
+ 
+  static schema = {
+    name: "Inventory",
+    properties: {
+      _id: "string",
+      _partition : "string",
+      name: "string",
+      cost: "float",
+      price: "float",
+      product_id: "string"
+    },
+    primaryKey: "_id",
+  };
+}
 
-export { Stores, Product, Categories, Expenses, Customers, Staffs, List, Transactions, TR_Details, Archive, ArchiveInfo, AttendanceLogs, Credit_List, Credit_Logs, BO, Returned, Discount };
+class Addon {
+  /**
+   *
+   * @param {string} name The name of the task
+   * @param {string status The status of the task. Default value is "Open"
+   * @param {ObjectId} id The ObjectId to create this task with
+   */
+  constructor({
+    partition,
+    id,
+    name,
+    cost,
+    price,
+    product_id
+   
+  }) {
+    this._partition = partition;
+    this._id = id;
+    this.name = name;
+    this.cost = cost;
+    this.price = price;
+    this.product_id = product_id
+   
+  }
+ 
+  static schema = {
+    name: "Addon",
+    properties: {
+      _id: "string",
+      _partition : "string",
+      name: "string",
+      cost: "float",
+      price: "float",
+      product_id: "string"
+    },
+    primaryKey: "_id",
+  };
+}
+class Option {
+  /**
+   *
+   * @param {string} name The name of the task
+   * @param {string status The status of the task. Default value is "Open"
+   * @param {ObjectId} id The ObjectId to create this task with
+   */
+  constructor({
+    partition,
+    id,
+    option,
+    product_id
+   
+  }) {
+    this._partition = partition;
+    this._id = id;
+    this.option = option;
+    this.product_id = product_id
+   
+  }
+ 
+  static schema = {
+    name: "Option",
+    properties: {
+      _id: "string",
+      _partition : "string",
+      option: "string",
+      product_id: "string"
+    },
+    primaryKey: "_id",
+  };
+}
+export { Stores, 
+         Product, 
+         Categories, 
+         Expenses, 
+         Customers, 
+         Staffs, 
+         List, 
+         Transactions, 
+         TR_Details, 
+         Archive, 
+         ArchiveInfo, 
+         AttendanceLogs, 
+         Credit_List, 
+         Credit_Logs, 
+         BO, 
+         Returned, 
+         Discount,
+        Inventory,
+        Addon,
+        Option };

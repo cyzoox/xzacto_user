@@ -40,7 +40,8 @@ let currencyPickerRef = undefined;
     const [error, setError] = useState(null);
     const [currency, setCurrency] = useState(null);
     const [alert, setAlert] = useState(false);
-
+    const [text, setText] = useState('');
+    const hasUnsavedChanges = Boolean(text);
     const [refreshing, setRefreshing] = useState(false);
 
     const onRefresh = useCallback(() => {
@@ -66,12 +67,17 @@ let currencyPickerRef = undefined;
           }
       };
 
-    useEffect(() => {
-        // If there is a user logged in, go to the Projects page.
- 
-        readItemFromStorage();
-        
-      }, []);
+      useEffect(
+        () =>
+         {  navigation.addListener('beforeRemove', (e) => {
+          e.preventDefault();
+          return
+      })    
+      readItemFromStorage();
+          },
+        [navigation, hasUnsavedChanges]
+      );
+
     
 
     const onClickStore = (item) => {
@@ -218,8 +224,8 @@ const styles = StyleSheet.create({
     flex: 1
   },
   stretch: {
-    width: windowWidth /3.2 - 20,
-    height: 120,
+    width: windowWidth /3.2 - 40,
+    height: 100,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10
   }, itemContainer: {

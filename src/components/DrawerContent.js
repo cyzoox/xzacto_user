@@ -25,6 +25,7 @@ import Alert from './Alert';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import app from "../../getRealmApp";
 import moment from 'moment'
+import { StackActions } from '@react-navigation/native';
 
 export function DrawerContent(props) {
   const customData = app.currentUser.customData;
@@ -36,6 +37,8 @@ export function DrawerContent(props) {
   const onSwitch = async() => {
     await AsyncStorage.removeItem('@store');
     await AsyncStorage.removeItem('@currency');
+
+
     setSwitchAlert(false)
     props.navigation.navigate("StoreSelect",{
       name: "My Project",
