@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Text, StyleSheet, View, TouchableOpacity, FlatList, Dimensions, ScrollView } from "react-native";
 import AppHeader from "../components/AppHeader";
 import Spacer from "../components/Spacer";
@@ -45,6 +45,8 @@ const ExpensesScreen = ({navigation}) => {
         const togglePOverlay = () => {
           setPVisible(!p_Visible);
         };
+  
+  
 
  const onSaveExpenses = () => {
     const date = moment().unix()
@@ -84,11 +86,17 @@ const onSelectPersonnel = (item) => {
   getFilteredTransactions(selectedValue)
   togglePOverlay()
 }
+
+useEffect(() => {
+  let date = moment().unix()
+  let today =  `${moment.unix(date).format('MMMM DD, YYYY')}`;
+
+},[]);
        
 const getFilteredTransactions=(filter)=>{
 
   setselectedValue(filter)
-  toggleOverlay()
+
   let date = moment().unix()
   let today =  `${moment.unix(date).format('MMMM DD, YYYY')}`;
   let yesterday = `${moment.unix(date).subtract(1, 'day').format('MMMM DD, YYYY')}`;
@@ -179,27 +187,11 @@ const getFilteredTransactions=(filter)=>{
           */}
            <View style={{justifyContent:'center', alignItems:'center', marginVertical: 10}}>
           <TouchableOpacity style={styles.filterStyle}>
-          <ModalInputForm
-                displayComponent={
-                    <View style={{flexDirection:"row"}}>
-                       <Feather style={{textAlign:'center',paddingRight: 10}} name={'users'} size={20} color={colors.black}/>
-                        <Text style={{paddingLeft:10, borderLeftWidth: 1,color: colors.black,  fontWeight:'700'}}>{attendant.length === 0 ? "Select Attendant": attendant}</Text>
+      
+                    <View style={{flexDirection:"row", justifyContent:"center", alignItems:'center'}}>
+                       <Feather style={{textAlign:'center',paddingRight: 10}} name={'calendar'} size={20} color={colors.black}/>
+                        <Text style={{paddingLeft:10, borderLeftWidth: 1,color: colors.black,  fontWeight:'700'}}>Today</Text>
                     </View>
-                }
-                title="Select Attendant"
-                onSave={()=> getFilteredTransactions('Today')}
-              >
-                <ScrollView>
-                  {
-                    staffs.map((item, index) => 
-                    item.status === 'Active' &&
-                      <TouchableOpacity style={item.name === attendant ? [styles.storeList,{ borderColor:colors.accent}] : styles.storeList} onPress={()=> {setAttendant(item.name), setAttendantInfo(item)}}>
-                        <Text style={{textAlign: 'center', fontWeight:'700', fontSize: 17, textTransform:'uppercase'}}>{item.name}</Text>
-                     </TouchableOpacity>
-                    )
-                  }
-                </ScrollView>
-              </ModalInputForm>
               </TouchableOpacity>
           </View>
            <View style={styles.cellHeaderContainer}>

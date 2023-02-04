@@ -13,7 +13,7 @@ import moment from 'moment'
 const TransactionSetailsScreen = ({navigation, route}) => {
 const { transactions } = route.params;
 const {getTRDetails,trdetails, store_info } = useStore();
-
+console.log(trdetails)
 const printReceipt = async () => {
   try {
       await BluetoothEscposPrinter.printerInit();

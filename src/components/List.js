@@ -11,6 +11,7 @@ import formatMoney from 'accounting-js/lib/formatMoney.js'
 import Feather from 'react-native-vector-icons/Feather'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import { TextInput } from 'react-native-paper';
+import Alert from './Alert';
 
 export default function List({ navigation, clearAll, archive, screen, toggleScanner, discount_visible, discount, autoPrint_visible}) {
   const { 
@@ -19,7 +20,8 @@ export default function List({ navigation, clearAll, archive, screen, toggleScan
     products_list ,
     incrementQty,
     decrementQty,
-    deleteItem
+    deleteItem,
+    products
   } = useStore();
     
     const [edit, toggleEdit] = useState(false);
@@ -30,7 +32,7 @@ export default function List({ navigation, clearAll, archive, screen, toggleScan
     const [deletes, toggleDelete] = useState(false);
     const [customQty, setCustomQtyVisible] = useState(false);
     const [data, setData] = useState([]);
-
+    const [alerts, alertVisible] = useState(false);
   const closeRow = (rowMap, rowKey) => {
       if (rowMap[rowKey]) {
           rowMap[rowKey].closeRow();
@@ -55,8 +57,19 @@ export default function List({ navigation, clearAll, archive, screen, toggleScan
  
 
   const onPressSave = () => {
-    editListQty(newQty, data)
-    setCustomQtyVisible(false)
+    products.map((x) => {
+       
+      if (x.pr_id === data.uid){
+        if(newQty > x.stock){
+          return alertVisible(true);
+        }else{
+          editListQty(data, parseFloat(newQty))
+          setCustomQtyVisible(false)
+        }
+        }
+    })
+
+
   }
 
   const onEditQty = (item) => {
@@ -80,7 +93,7 @@ export default function List({ navigation, clearAll, archive, screen, toggleScan
         <View style={{ flex: 1, alignSelf: 'flex-start', flexDirection: 'row', backgroundColor:colors.white, paddingVertical: 10, justifyContent:'space-evenly' }}>
         <View style={[styles.cellContainer, {flex: 2}]}>
              <Text style={styles.cellStyle}>{item.name}</Text>
-           {item.withAddtional === true ? <Text style={[styles.cellStyle,{ fontSize:10}]}>with {item.addon}, {item.option}</Text>: null}
+        <Text style={[styles.cellStyle,{ fontSize:10}]}>with {item.addon}, {item.option}</Text>
         </View>
         <View style={[styles.cellContainer, {flex: 2.5}]}>
             <View style={{flexDirection:'row',  alignItems:'center'}}>
@@ -125,6 +138,7 @@ export default function List({ navigation, clearAll, archive, screen, toggleScan
  
   return (
     <>
+     <Alert visible={alerts} onCancel={()=> alertVisible(false)} onProceed={()=> alertVisible(false)} title="Insufficient Stocks" content="Insufficient stocks can't proceed with your input." confirmTitle="OK"/>
      <View style={{flex: 1, backgroundColor: '#FFFFFF'}}>
       <View style={styles.cellHeaderContainer}>
           <View style={[styles.cellContainer, {flex: 3}]}>
@@ -181,21 +195,21 @@ export default function List({ navigation, clearAll, archive, screen, toggleScan
           <Text style={[styles.footerTextStyle,{fontWeight: '700'}]}>Total</Text>
           <Text style={[styles.footerTextStyle,{fontWeight: '700'}]}>{formatMoney(calculateTotal()-(calculateTotal()*discount/100), { symbol: "₱", precision: 2 })}</Text>
       </View>
-      <Overlay overlayStyle={{ width: "80%", borderRadius: 10, padding: 20, justifyContent:'center' }} isVisible={customQty} onBackdropPress={setCustomQtyVisible}>
-      <Text style={{textAlign:'center', fontSize: 20, fontWeight:'bold'}}>Quantity of {data.name} </Text>
-        <View style={{marginHorizontal: 20}}>
+      <Overlay overlayStyle={{ width: "70%", borderRadius: 20, padding: 20, justifyContent:'center' }} isVisible={customQty} onBackdropPress={setCustomQtyVisible}>
+      <Text style={{textAlign:'center', fontSize: 20, fontWeight:'600'}}>Quantity of <Text style={{ fontSize: 20, fontWeight:'600', color:colors.accent}}>{data.name}</Text> </Text>
+        <View style={{marginHorizontal: 20, justifyContent:'center', alignItems:'center'}}>
             <TextInput 
               mode="outlined"
               onChangeText={(text)=> setNewQty(text)}
               defaultValue={`${data.quantity}`}
               keyboardType="decimal-pad"
-              style={{margin: 20, textAlign:'center', marginHorizontal: 70}}
+              style={{ textAlign:'center',borderRadius: 10, width: 100, height: 40, margin:20}}
               theme={{colors: {primary: colors.accent, underlineColor: 'transparent'}}}
             />
         </View>
         <View style={{flexDirection:'row', justifyContent:'space-evenly'}}>
         <Button buttonStyle={{backgroundColor: colors.red, borderRadius: 5, paddingHorizontal:20}} title="  Cancel  " onPress={()=> setCustomQtyVisible(false)}/>
-          <Button buttonStyle={{ backgroundColor: colors.accent, borderRadius: 5, paddingHorizontal:20}} title="    Save    " onPress={()=> onPressSave()}/>
+          <Button buttonStyle={{ backgroundColor: colors.primary, borderRadius: 5, paddingHorizontal:20}} title="    Save    " onPress={()=> onPressSave()}/>
           </View>
      
        

@@ -31,9 +31,9 @@ import { RNCamera } from 'react-native-camera';
 import app from "../../getRealmApp";
 
 
-const HomeScreen = ({ navigation }) => {
-  const customData = app.currentUser.customData;
-  const {stores, products,store_info, createArchive, archiveInfo, deleteList, updateProductOnClear, editListQty,createList , loading, products_list } = useStore();
+const HomeScreen = ({ navigation, route }) => {
+  const store_info = route.params.store_info;
+  const {stores, products, createArchive, archiveInfo, deleteList, updateProductOnClear, editListQty,createList , loading, products_list } = useStore();
   const {user} = useAuth();
   const [search, toggleSearch] = useState(false);
   const [term, setTerm] = useState('');
@@ -152,11 +152,11 @@ const onSaveArchive = () => {
     timeStamp: moment().unix(),
   }
 
-  createArchive(archive, list)
+  createArchive(archive, products_list)
 }
 
 const onClear = () => {
-  updateProductOnClear(list);
+  updateProductOnClear(products_list);
   setClear(false)
 }
 
@@ -181,7 +181,7 @@ const onCancelCustomDisc = () => {
   return(
       <View style={{flex: 1, backgroundColor:'white'}}>
         
-        <Loader loading={loading}/>
+     
         <Alert visible={alerts} onCancel={()=> alertVisible(false)} onProceed={()=> alertVisible(false)} title="No attendant" content="Please login first." confirmTitle="OK"/>
         <Alert visible={visible} onCancel={onCancel} onProceed={onProceed} title="Archive List?" content="Are you sure you want to archive current list?" confirmTitle="Proceed"/>
         <Alert visible={clear} onCancel={onCancelClear} onProceed={onClear} title="Clear List?" content="Are you sure you want to clear current list?" confirmTitle="Proceed"/>
@@ -234,7 +234,7 @@ const onCancelCustomDisc = () => {
         </AlertwithChild>
         <SubAlert visible={subscription} onCancel={()=> {}} onProceed={()=>{}} title="Extend your subscription" content="Your current subscription has ended. To continue using Xzacto please purchase a new plan or contact system administrator to continue your plan. " />
           <AppHeader 
-            centerText="Home"
+            centerText={`${store_info.name}`}
             leftComponent={
                 <TouchableOpacity onPress={()=> navigation.openDrawer()}>
                   <EvilIcons name={'navicon'} size={35} color={colors.white}/>

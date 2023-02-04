@@ -42,9 +42,10 @@ const AuthProvider = ({ children }) => {
     setProjectData([myProject]);
 
     const config = {
+      schema:[user],
       sync: {
         user,
-        partitionValue: `user=${user.id}`,
+        partitionValue: `project=${user.id}`,
       },
     };
 

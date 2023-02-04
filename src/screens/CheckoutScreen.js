@@ -118,6 +118,13 @@ const calculateTotalItems = () => {
   });
  return total;
 }
+const calculateTotalProfit = () => {
+  let total = 0;
+  products_list.forEach(list => {
+          total += (list.sprice-list.oprice)*list.quantity;
+  });
+ return total;
+}
 
     const onSaveCreditTransaction = () => {
       if(store_info.attendant === ""){
@@ -173,10 +180,10 @@ const calculateTotalItems = () => {
       discount: calculateTotal()*(selected/100),
       discount_name: discount_name,
       vat: 12,
+      profit: calculateTotalProfit(),
       received: received,
       change:change
     }
-
 
 
     createTransaction(products_list,transaction)

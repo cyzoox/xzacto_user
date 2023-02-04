@@ -27,7 +27,7 @@ const StoreSelectProvider = ({ children, projectPartition }) => {
       };
 
         const config = {
-        
+          schema:[Stores.schema],
           sync: {
             user: user,
             partitionValue: projectPartition,
@@ -82,6 +82,62 @@ const StoreSelectProvider = ({ children, projectPartition }) => {
     });
   };
 
+  const onLogOut = async(item, store_info) => {
+    const projectPOS = realmRef.current;
+    const store = projectPOS.objects("Store");
+    const filteredStore = store.filtered("_id == $0", store_info._id);
+
+    let newStoreInfo = {
+      _id : store_info._id,
+      _partition: store_info._partition,
+      branch: store_info.branch,
+      name: store_info.name,
+      owner: store_info.owner,
+      password: store_info.password,
+      attendant: "",
+      attendant_id: ""
+  }
+
+  const storeValue = JSON.stringify(newStoreInfo)
+  await AsyncStorage.setItem('@store', storeValue)
+ 
+    projectPOS.write(() => {
+      item.outStamp = moment().unix();
+      filteredStore[0].attendant = "";
+      filteredStore[0].attendant_id = "";
+      store_info.attendant_id = "";
+      store_info.attendant = ""
+      });
+
+  }
+
+  const onLogIn = async(item, store_info) => {
+    const projectPOS = realmRef.current;
+    const store = projectPOS.objects("Stores");
+    const filteredStore = store.filtered("_id == $0", store_info._id);
+
+    let newStoreInfo = {
+        _id : store_info._id,
+        _partition: store_info._partition,
+        branch: store_info.branch,
+        name: store_info.name,
+        owner: store_info.owner,
+        password: store_info.password,
+        attendant: item.name,
+        attendant_id: item._id
+    }
+
+    const storeValue = JSON.stringify(newStoreInfo)
+    await AsyncStorage.setItem('@store', storeValue)
+
+    projectPOS.write(() => {
+      store_info.attendant_id = item._id;
+      store_info.attendant = item.name;
+      filteredStore[0].attendant_id = item._id;
+      filteredStore[0].attendant = item.name
+      });
+
+  }
   const getCustomStore = () => {
     const projectPOS = realmRef.current;
  

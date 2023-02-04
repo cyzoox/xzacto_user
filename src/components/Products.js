@@ -40,6 +40,8 @@ export default function Products({ navigation, search,toggleSearch}) {
      option,
      addon
    } = useStore();
+
+   
     const [overlay, overlayVisible] = useState(false);
     const [item, setItems] = useState([]);
     const [term, setTerm] = useState('');
@@ -72,7 +74,7 @@ export default function Products({ navigation, search,toggleSearch}) {
     const onCancelAlert = () => {
       alertVisible(false)
     }
-    
+    console.log(products)
 
     const onSaveList2 = () => {
     
@@ -144,10 +146,10 @@ export default function Products({ navigation, search,toggleSearch}) {
         quantity: 1,
         uid: item.pr_id,
         timeStamp: moment().unix(),
-        addon: '',
+        addon: 't',
         addon_price: 0,
         addon_cost: 0,
-        option: '',
+        option: 't',
         withAddtional: false
       }
       onSaveList(list, user, store_info)
@@ -218,16 +220,16 @@ const onselectOption =(item) => {
              source={item.img === null || item.img === '' ? require('../../assets/noproduct.png') :{
                  uri:  item.img,
                  headers: { Authorization: 'auth-token' },
-                 priority: FastImage.priority.normal,
+                 priority: FastImage.priority.high,
              }}
-             resizeMode={FastImage.resizeMode.stretch}
+             resizeMode={FastImage.resizeMode.cover}
          />  
-  {
+  {/* {
    item.stock <= 0 ?
    <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center'}}>
        <Text style={{color: colors.red, fontWeight:'bold'}}>Out of Stock</Text>
      </View>
-    : null}
+    : null} */}
      
      </View>
          <View>
@@ -240,7 +242,7 @@ const onselectOption =(item) => {
             products_list.map((items) => {
               
               return(items._id === item._id && 
-                <View style={{position: 'absolute', top: 5,  right: 5, bottom: 0,color: colors.white, backgroundColor: colors.accent, height: 35, width: 35, borderRadius: 25, justifyContent:'center'}}>
+                <View style={{position: 'absolute', top: 5,  left: 5, bottom: 0,color: colors.white, backgroundColor: colors.accent, height: 35, width: 35, borderRadius: 25, justifyContent:'center'}}>
                   <Text style={{ fontWeight:'bold', textAlign:'center', color: colors.white}}>{items.quantity}</Text>
                 </View>
               )
@@ -248,6 +250,13 @@ const onselectOption =(item) => {
             })
            
            }
+              {item.stock <= 10 ? <View style={styles.container}>
+                <View style={[styles.label,
+                        {height:20},
+                        ]}>
+                  <Text style={{color: colors.white, fontSize:11, fontWeight:'bold'}}>Low stock</Text>
+                </View>
+         </View>: null}
      </View>
   
  </TouchableWithoutFeedback>
@@ -289,15 +298,18 @@ const onselectOption =(item) => {
  <Overlay fullScreen isVisible={additionals} onBackdropPress={()=> setWithAdditional(false)}>       
    
       <View style={styles.header}>
+        <ImageBackground  blurRadius={1} style={styles.stretch2}  source={product_info.img === null || item.img === '' ? require('../../assets/noproduct.png'): {uri: product_info.img}}>
       <FastImage
               style={styles.stretch2}
              source={product_info.img === null || item.img === '' ? require('../../assets/noproduct.png') :{
                  uri:  product_info.img,
                  headers: { Authorization: 'auth-token' },
-                 priority: FastImage.priority.normal,
+                 priority: FastImage.priority.high,
              }}
-             resizeMode={FastImage.resizeMode.cover}
+             resizeMode={FastImage.resizeMode.contain}
+             
          /> 
+    </ImageBackground>
        <View style={{position:'absolute', left: 20, top: 20, zIndex: 1}}>
         <TouchableOpacity onPress={()=> setWithAdditional(false)}>
               <EvilIcons name={'arrow-left'} size={45} color={colors.white}/>
@@ -306,11 +318,11 @@ const onselectOption =(item) => {
       </View>
       <View style={{marginTop:20, flexDirection:'row', justifyContent:'space-between', alignItems:'center'}}>
 
-<View style={{flex:1}}>
-  <Text style={{fontSize: 20, marginLeft: 15}}>{product_info.name}sfws gewt wertwetyew</Text>
+<View style={{flex:3}}>
+  <Text style={{fontSize: 20, marginLeft: 15}}>{product_info.name}</Text>
   <Text style={{fontSize: 15, marginLeft: 15}}>{product_info.brand}</Text>
 </View>
-<View style={{marginRight: 10}}>
+<View style={{marginRight: 30, flex: 1, height: 70}}>
   <View style={{flexDirection:"row", flex:1}}>
    {aqty > 1 ?  <TouchableOpacity style={styles.plusBtn}>
         <EvilIcons onPress={()=> setAqty(aqty-1)} name={'minus'} size={20} color={colors.white}/>
@@ -320,7 +332,7 @@ const onselectOption =(item) => {
         <EvilIcons name={'plus'} size={20} color={colors.white}/>
      </TouchableOpacity>
   </View>
-  <View>
+  <View style={{flex:1, marginLeft: 10}}>
     <Text style={{textAlign:'center', fontSize: 20, fontWeight:'bold', color: colors.primary}}> {formatMoney((total + selectedVariant.price + selectedAddon.price)*aqty, { symbol: "₱", precision: 2 })}</Text>
   </View>
 </View>
@@ -516,7 +528,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.89,
     shadowRadius: 2,
     elevation: 5,
-    marginBottom: 10
+    marginBottom: 10,
+    overflow: 'hidden',
   },
   additionalCard: {
     flex:1,
@@ -549,6 +562,7 @@ const styles = StyleSheet.create({
   },
   stretch: {
     width: windowWidth /3 - 13,
+
     height: 100,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10
@@ -572,9 +586,12 @@ iconStyle: {
   marginHorizontal: 15,
 },
 container: {
-flex: 1,
-alignItems: 'center',
-justifyContent: 'center',
+  position: 'absolute',
+  transform: [{rotate: '40deg'}],
+  right: -25,
+  top:13,
+  backgroundColor:'red',
+  width:100
 },
 modalView: {
 margin: 0,
@@ -602,6 +619,11 @@ position: 'absolute', //Here is the trick
 bottom: 0, //Here is the trick
 borderTopColor: colors.primary,
 borderWidth: 1
+},
+label: {
+  justifyContent: 'center',
+  alignItems: 'center',
+  
 },
 discountButton: {paddingVertical: 4,paddingHorizontal: 10, borderWidth: 1, borderColor: colors.accent, borderRadius: 10},
 discountButton2: {paddingVertical: 4,paddingHorizontal: 10, borderWidth: 1, borderColor: colors.primary, borderRadius: 10, backgroundColor: colors.primary}

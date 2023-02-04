@@ -22,21 +22,12 @@ const SigninScreen = ({ navigation }) => {
     const currency =  await AsyncStorage.getItem('@currency')
 
    
- 
-      if(item !== null && currency !== null){
-        navigation.navigate("Dashboard", {
+        navigation.navigate("Dashboard",{
           name: "My Project",
           projectPartition: `project=${user.id}` ,
-          store_info : JSON.parse(item),
-          currency : JSON.parse(currency)
+          userid: user
         });
-      }else{
-        navigation.navigate("StoreSelect",{
-          name: "My Project",
-          projectPartition: `project=${user.id}` ,
-        });
-      }
- 
+
     };
 
 

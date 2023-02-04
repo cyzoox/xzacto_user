@@ -28,10 +28,11 @@ import LoadingScreen from "./src/screens/LoadingScreen";
 import CreditTransactionSetailsScreen from "./src/screens/CreditTransactionDetailScreen";
 import ReturnScreen from "./src/screens/ReturnScreen";
 import ZReadReport from "./src/screens/ZReadReport";
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Fastfood from "./src/screens/FastfoodScreen";
 import HomeScreenII from "./src/screens/HomeScreenII";
 import SignupScreen from "./src/screens/SignupScreen";
+
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -57,11 +58,15 @@ function DrawerScreen2() {
   );
 }
 
-function DrawerScreen() {
+function DrawerScreen({store_info}) {
   return (
     <Drawer.Navigator drawerContent={(props) => <DrawerContent {...props}/>}>
-    
-    <Drawer.Screen name="Home" component={HomeScreen} />
+
+    <Drawer.Screen name="Home"    
+      initialParams={{
+      store_info: store_info
+        }} 
+        component={HomeScreen} />
     <Drawer.Screen name="Checkout" component={CheckoutScreen} />
     <Drawer.Screen name="Archive" component={Archives} />
     <Drawer.Screen name="Expenses" component={ExpensesScreen} />
@@ -153,11 +158,35 @@ function StoreSelected() {
           name="StoreLogin"
           component={StoreLogin}
           options={{headerShown: false}}
-        />
+          />
+       
   </Stack.Navigator>
   );
 }
 
+function Home() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+          name="StoreLogin"
+          component={StoreSelected}
+          options={{headerShown: false}}
+          />
+            <Stack.Screen
+              name="Storeboard"
+          
+              options={{headerShown: false}}
+              >
+             {(props) => {
+              const { navigation, route } = props;
+              const { store_info } = route.params;
+            return(
+             <DrawerScreen store_info={store_info} />
+            )}}
+      </Stack.Screen>
+  </Stack.Navigator>
+  );
+}
 const App = () => {
   return (
     <AuthProvider>
@@ -175,34 +204,19 @@ const App = () => {
             component={SignupScreen}
             options={{headerShown: false}}
           />
-       <Stack.Screen
-            name="StoreSelect"
-            options={{headerShown: false}}
-          >
-        {(props) => {
-              const { navigation, route } = props;
-              const { user, projectPartition } = route.params;
-            return(
-              <StoreSelectProvider user={user} projectPartition={projectPartition}>
-                <StoreSelected navigation={navigation} route={route}/>
-              </StoreSelectProvider>
-              );
-            }
-            }
-        </Stack.Screen>
+     
           <Stack.Screen name="Dashboard" options={{headerShown: false}}>
           {(props) => {
               const { navigation, route } = props;
-              const { user, projectPartition, store_info } = route.params;
+              const { user, projectPartition } = route.params;
             return(
-              <StoreProvider user={user} projectPartition={projectPartition} store_info={store_info}>
-              <DrawerScreen store_info={store_info} navigation={navigation} route={route} />
-            </StoreProvider>
+                  <StoreProvider user={user} projectPartition={projectPartition} store_info={[]}>
+                    <Home   navigation={navigation} route={route} />
+                  </StoreProvider> 
               );
             }
             }
           </Stack.Screen>
-       
           </Stack.Navigator>
       </NavigationContainer>
 

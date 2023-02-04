@@ -49,7 +49,9 @@ export function DrawerContent(props) {
   const logout = async() => {
     await AsyncStorage.removeItem('@store');
     await AsyncStorage.removeItem('@currency');
+    props.navigation.popToTop()
     signOut()
+  
   }
 
   const onCancelAlert = () => {

@@ -1,3 +1,5 @@
+import Realm from 'realm';
+import { Products, Stores } from '../../schemas';
 import React, { useEffect, useState, useCallback } from "react";
 import { Text, StyleSheet, View, TouchableOpacity, FlatList, TouchableWithoutFeedback , Dimensions, RefreshControl} from "react-native";
 import AppHeader from "../components/AppHeader";
@@ -7,7 +9,7 @@ import { useStore } from "../context/StoreContext";
 import { ListItem, Avatar, Overlay , Button} from "react-native-elements";
 import SmoothPinCodeInput from 'react-native-smooth-pincode-input';
 import { useAuth } from "../context/AuthContext";
-
+import { useStoreSelect } from "../context/StoreSelectContext";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useAsyncStorage} from '@react-native-async-storage/async-storage';
 import CurrencyPicker from "react-native-currency-picker"
@@ -16,133 +18,146 @@ import Loader from "../components/Loader";
 import { FlatGrid } from 'react-native-super-grid';
 import Feather from 'react-native-vector-icons/Feather'
 import FastImage from 'react-native-fast-image'
+import { useFocusEffect } from '@react-navigation/native';
 const windowWidth = Dimensions.get('window').width;
 const wait = (timeout) => {
   return new Promise(resolve => setTimeout(resolve, timeout));
 }
 
 
-const StoreLogin = ({navigation}) => {
-  
-let currencyPickerRef = undefined;
 
-  const {user} = useAuth();
-    const {stores, getCustomStore} = useStore();
-    const [selectedLanguage, setSelectedLanguage] = useState();
-    const [visible, setVisible] = useState(false);
-    const [code, setCode] = useState('');
-    const [info, setInfo] = useState([]);
-    const [error, setError] = useState(null);
-    const [currency, setCurrency] = useState(null);
-    const [alert, setAlert] = useState(false);
-    const [text, setText] = useState('');
-    const hasUnsavedChanges = Boolean(text);
-    const [refreshing, setRefreshing] = useState(false);
-
-    const onRefresh = useCallback(() => {
-      setRefreshing(true);
-      getCustomStore()
-      wait(2000).then(() => setRefreshing(false));
-    }, []);
-
-    const [demo, setDemo] = useState([]);
-
-    const readItemFromStorage = async () => {
-        const item =  await AsyncStorage.getItem('@store')
-       
-        if(item != null){
-       
-            navigation.navigate("Storeboard", {
-              name: "My Project",
-              projectPartition: `project=${user.id}` ,
-              store_info : JSON.parse(item),
-          
-            });
-        
-          }
-      };
-
-      useEffect(
-        () =>
-         {  navigation.addListener('beforeRemove', (e) => {
-          e.preventDefault();
-          return
-      })    
-      readItemFromStorage();
-          },
-        [navigation, hasUnsavedChanges]
-      );
-
+const StoreSelect = ({ navigation, route }) => {
+    const {user} = useAuth();
     
+  const [object, setObject] = useState([]);
+  const projectPartition = route.params.projectPartition;
+  const userid = route.params.userid;
+  const [selectedLanguage, setSelectedLanguage] = useState();
+  const [visible, setVisible] = useState(false);
+  const [code, setCode] = useState('');
+  const [info, setInfo] = useState([]);
+  const [error, setError] = useState(null);
+  const [currency, setCurrency] = useState(null);
+  const [alert, setAlert] = useState(false);
+  const [text, setText] = useState('');
+  const hasUnsavedChanges = Boolean(text);
+  const [refreshing, setRefreshing] = useState(false);
 
-    const onClickStore = (item) => {
-        setVisible(true)
-        setInfo(item)
-    }
+  const [realm, setRealm] = useState(null);
+  const [data, setData] = useState([]);
+
+//   const OpenRealmBehaviorConfiguration = {
+//     type: 'openImmediately',
+//   };
+
+//   const schema =[ {
+//     name: 'Stores',
+//     properties: {
+//       _id: "string",
+//       _partition: "string",
+//       name: "string",
+//       branch: "string",
+//       owner: "string?",
+//       password: "string",
+//       attendant: "string",
+//       attendant_id: "string",
+//       store_type: "string"
+//     },
+//     primaryKey: "_id",
+//   }];
+
+//   useFocusEffect(
+//     useCallback(() => {
+//       Realm.open({ schema, sync: {
+//         user: user,
+//         partitionValue: projectPartition,
+//         newRealmFileBehavior: OpenRealmBehaviorConfiguration,
+//         existingRealmFileBehavior: OpenRealmBehaviorConfiguration,
+//       }, }).then(realmInstance => {
+//         setRealm(realmInstance);
+//         setData(realmInstance.objects('Stores').filtered("owner == $0", user.id));
+//       });
+//       return () => {
+//         if (realm) {
+//           realm.close();
+//         }
+//       };
+//     }, [])
+//   );
+
+  
+  const onClickStore = (item) => {
+    setVisible(true)
+    setInfo(item)
+}
 
 
 
-    const onCheckPassword = async() => {
-      
-        if(info.password === code){
-            let infos = {
-                _id : info._id,
-                _partition: info._partition,
-                branch: info.branch,
-                name: info.name,
-                owner: info.owner,
-                password: info.password,
-                attendant: info.attendant,
-                attendant_id: info.attendant_id,
-                store_type: info.store_type
-            }
-            
+const onCheckPassword = async() => {
+  
+    if(info.password === code){
+        let infos = {
+            _id : info._id,
+            _partition: info._partition,
+            branch: info.branch,
+            name: info.name,
+            owner: info.owner,
+            password: info.password,
+            attendant: info.attendant,
+            attendant_id: info.attendant_id,
+            store_type: info.store_type
+        }
+        
+     
+
+          const storeValue = JSON.stringify(infos)
+          const currencyValue = JSON.stringify(currency)
+
+          await AsyncStorage.setItem('@store', storeValue)
+          await AsyncStorage.setItem('@currency', currencyValue)
+
+          setVisible(false)
+          realm.close();
+          navigation.pop
+            navigation.navigate("Dashboard", {
+              name: "My Project",
+              projectPartition: projectPartition ,
+              store_info : JSON.parse(storeValue),
+              currency : JSON.parse(currencyValue)
+            });
+           
          
 
-              const storeValue = JSON.stringify(infos)
-    
-
-              await AsyncStorage.setItem('@store', storeValue)
-      
-
-              setVisible(false)
-
-                navigation.navigate("Storeboard", {
-                  name: "My Project",
-                  projectPartition: projectPartition ,
-                  store_info : JSON.parse(storeValue),
-          
-                });
-           
-             
-
-            
-      
-        }else{
-            setCode('')
-            setError('Incorrect password, please try again!')
-        }
+        
+  
+    }else{
+        setCode('')
+        setError('Incorrect password, please try again!')
     }
+}
 
-    const renderItem = ({ item }) => (
-     {/*   <ListItem bottomDivider underlayColor="gray" containerStyle={{ margin: 5, borderRadius: 5}} onPress={()=> onClickStore(item)}>
-          <Avatar title={item.name[0]} source={'https://s3.amazonaws.com/uifaces/faces/twitter/adhamdannaway/128.jpg' && { uri: 'https://s3.amazonaws.com/uifaces/faces/twitter/adhamdannaway/128.jpg' }}/>
-          <ListItem.Content>
-            <ListItem.Title>{item.name}</ListItem.Title>
-            <ListItem.Subtitle>{item.branch}</ListItem.Subtitle>
-          </ListItem.Content>
-          <ListItem.Chevron />
-    </ListItem> */}
-   
-      )
+const renderItem = ({ item }) => (
+ {/*   <ListItem bottomDivider underlayColor="gray" containerStyle={{ margin: 5, borderRadius: 5}} onPress={()=> onClickStore(item)}>
+      <Avatar title={item.name[0]} source={'https://s3.amazonaws.com/uifaces/faces/twitter/adhamdannaway/128.jpg' && { uri: 'https://s3.amazonaws.com/uifaces/faces/twitter/adhamdannaway/128.jpg' }}/>
+      <ListItem.Content>
+        <ListItem.Title>{item.name}</ListItem.Title>
+        <ListItem.Subtitle>{item.branch}</ListItem.Subtitle>
+      </ListItem.Content>
+      <ListItem.Chevron />
+</ListItem> */}
 
-     const onCancel = () => {
-        setAlert(false)
-      }
+  )
+
+ const onCancel = () => {
+    setAlert(false)
+  }
+
+
+  // ... your screen logic
 
   return (
     <View style={styles.Container}>
-       {/* <Loader loading={loading}/> */}
+      
         <Alert visible={alert} onCancel={onCancel} onProceed={onCancel} title="No currency selected." content="Please select currency." confirmTitle="OK"/>
          <AppHeader 
             centerText="Select Store"
@@ -155,13 +170,8 @@ let currencyPickerRef = undefined;
         />
           <FlatGrid
       itemDimension={100}
-      refreshControl={
-        <RefreshControl
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-      />
-      }
-      data={stores}
+  
+      data={data}
       // staticDimension={300}
       // fixed
       style={{marginBottom: 50}}
@@ -214,6 +224,7 @@ let currencyPickerRef = undefined;
   );
 };
 
+
 const styles = StyleSheet.create({
     Container: {
     flex: 1
@@ -250,4 +261,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default StoreLogin;
+export default StoreSelect;
