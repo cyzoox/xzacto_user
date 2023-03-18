@@ -18,18 +18,12 @@ import { theme } from "../constants";
 import { useStore } from "../context/StoreContext";
 const { width, height } = Dimensions.get('window');
 
-export function Categories({onTabChange}) {
+export function Categories({onTabChange, store_info}) {
   const { 
-    createStore,
-    deleteTask,
-    stores,
-    loading,
-    createProducts,
-    products,
-    createCategories,
-    category,
-    store_info } = useStore();
+    category } = useStore();
   const [active, setActive] = useState(category.length === 0 ?  '': category[0].name);
+
+  console.log('categ', category)
 
   useEffect(() => {
     category.length === 0 ?

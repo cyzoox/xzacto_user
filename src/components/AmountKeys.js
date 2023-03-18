@@ -97,6 +97,7 @@ const onSaveCustomCash = () => {
                 mode="outlined"
                 theme={{colors: {primary: colors.accent, underlineColor: 'transparent'}}}
                 value={custom_cash}
+                keyboardType="numeric"
                 onChangeText={(text)=>setCustomeCash(parseFloat(text))}
                 style={{height: 50, width: 180, borderColor: colors.accent}}
               />
@@ -151,7 +152,7 @@ const onSaveCustomCash = () => {
               }
      
           
-                <Button titleStyle={{color: colors.primary}} buttonStyle={{paddingVertical: 15, paddingHorizontal: 20,borderColor: colors.accent, borderWidth: 1, borderRadius:10}} type="outline"  title="Pay using Credit" onPress={()=> setCreditVisible(true)}/>
+                <Button titleStyle={{color: colors.primary}} buttonStyle={{paddingVertical: 15, paddingHorizontal: 20,borderColor: colors.accent, borderWidth: 1, borderRadius:10}} type="outline"  title="EPay / Card" onPress={()=>{}}/>
           
             </View>
           </Spacer>

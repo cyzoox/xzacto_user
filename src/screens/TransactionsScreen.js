@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Text, StyleSheet, View, TouchableOpacity, FlatList, Picker, Dimensions, ScrollView } from "react-native";
+import { Text, StyleSheet, View, TouchableOpacity, FlatList, Picker, Dimensions, ScrollView, TouchableHighlight } from "react-native";
 import AppHeader from "../components/AppHeader";
 import Spacer from "../components/Spacer";
 import { ModalInputForm } from "../components/ModalInputForm";
@@ -21,36 +21,30 @@ import SearchInput, { createFilter } from 'react-native-search-filter';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import Feather from 'react-native-vector-icons/Feather'
 import Alert from "../components/Alert";
-
+import { useFocusEffect } from '@react-navigation/native';
+import AlertwithChild from "../components/AlertwithChild";
 const KEYS_TO_FILTERS = ['status'];
-
+import SmoothPinCodeInput from 'react-native-smooth-pincode-input';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 const { width, height } = Dimensions.get('window');
-const TransactionScreen = ({navigation}) => {
+const TransactionScreen = ({navigation, route}) => {
+  const store_info = route.params.store_info;
     const { 
-        createStore,
-        deleteTask,
-        stores,
-        loading,
-        createProducts,
-        products,
-        createCategories,
-        category,
-        createExpenses,
-        expenses,
-        createCustomer,
-        customers,
-        createStaff,
         staffs,
-        createList,
-        list,
-        deleteList,
-        editListQty,
-        createTransaction,
+        stores,
         transactions,
         getCustomTransaction,
-        onVoidTransaction, store_info } = useStore();
+        onVoidTransaction } = useStore();
+        const selectStoreStaff = () => {
+          let store = []
+          stores.forEach(item => {
+            if(item._id === store_info._id){
+             store = store.concat(item)
+            }
+          });
+          return store;
+        }
       
         const [selectedValue, setselectedValue] = useState('Today');
         const [visible, setVisible] = useState(false);
@@ -59,19 +53,38 @@ const TransactionScreen = ({navigation}) => {
         const [active, setActive] = useState('');
         const [term, setTerm] = useState('Completed');
         const [selected,setSelected] = useState(0)
-        const [attendant, setAttendant] = useState('');
+        const [attendant, setAttendant] = useState(selectStoreStaff()[0].attendant);
         const [attendant_info, setAttendantInfo] = useState([]);
         const filteredProducts = transactions.filter(createFilter('Completed', KEYS_TO_FILTERS))
         const [alerts, alertVisible] = useState(false)
         const [items, setItem] = useState([]);
+        const [code, setCode] = useState('')
+        const [reason, setReason] = useState('')
+        const [pinVisible, setPinVisible] = useState(false)
+        const [error, setError] = useState('')
         const filteredVoidedProducts = transactions.filter(createFilter('Voided', KEYS_TO_FILTERS))
       
-
-        useEffect(() => {
-          let date = moment().unix()
-          let today =  `${moment.unix(date).format('MMMM DD, YYYY')}`;
-          getCustomTransaction('Today', {date : today}, store_info.attendant_id)
-        },[]);
+        useFocusEffect(
+          React.useCallback(() => {
+            let date = moment().unix()
+            let today =  `${moment.unix(date).format('MMMM DD, YYYY')}`;
+            getCustomTransaction('Today', {date : today}, selectStoreStaff()[0].attendant_id)
+          }, [])
+        );
+       
+        const checkPIN = () => {
+          if( selectStoreStaff()[0].password === code){
+            onVoidTransaction(items, reason)
+            alertVisible(false)
+            setPinVisible(false)
+            setCode('')
+            setReason('')
+          }else{
+            setCode('')
+            setError('Wrong PIN, Please try again!')
+          }
+        }
+     
 
         const togglePOverlay = () => {
           setPVisible(!p_Visible);
@@ -170,7 +183,7 @@ const calculateVoidedTotal = () => {
       return(
        <DataTable
        total={calculateVoidedTotal()}
-       headerTitles={['Time','Date', 'Type', 'Receipt', 'Discount', 'Amount','View']}
+       headerTitles={['Time','Date', 'Type', 'Receipt','Reason', 'Discount', 'Amount','View']}
        alignment="center"
      >
        <FlatList
@@ -211,7 +224,7 @@ const calculateVoidedTotal = () => {
                       </TouchableOpacity>
                   </Col>
                   <Col style={[styles.ColStyle,{alignItems: 'center'}]}>
-                      <TouchableOpacity style={styles.voidStyle} onPress={()=> navigation.navigate('TransactionDetailsScreen',{transactions:item})}>
+                      <TouchableOpacity style={styles.voidStyle} onPress={()=> navigation.navigate('TransactionDetailsScreen',{transactions:item, store_info})}>
                           <Text style={{color: colors.white, fontSize: 11}}>View</Text>
                       </TouchableOpacity>
                   </Col> 
@@ -232,7 +245,10 @@ const calculateVoidedTotal = () => {
                           <Text  style={styles.textColor}>{item.payment_method}</Text>
                       </Col>   
                       <Col style={[styles.ColStyle,{alignItems: 'center'}]}>
-                          <Text  style={styles.textColor}>{item.timeStamp}</Text>
+                      <Text  style={styles.textColor}>{item.timeStamp}</Text>
+                  </Col>
+                      <Col style={[styles.ColStyle,{alignItems: 'center'}]}>
+                          <Text  style={styles.textColor}>{item.void_reason}</Text>
                       </Col>
                       <Col style={[styles.ColStyle,{alignItems: 'center'}]}>
                           <Text  style={styles.textColor}>{formatMoney(item.discount, { symbol: "₱", precision: 2 })}</Text>
@@ -254,7 +270,24 @@ const calculateVoidedTotal = () => {
   }
   return (
       <View style={{flex: 1}}>
-         <Alert visible={alerts} onCancel={onCancelAlert} onProceed={()=>{ onVoidTransaction(items),alertVisible(false)}} title="Void Transaction?" content="Are you sure you want to void this transaction?" confirmTitle="OK"/>
+         {/* <Alert visible={alerts} onCancel={onCancelAlert} onProceed={()=>{ onVoidTransaction(items),alertVisible(false)}} title="Void Transaction?" content="Are you sure you want to void this transaction?" confirmTitle="OK"/> */}
+          <AlertwithChild visible={alerts} onCancel={onCancelAlert} onProceed={()=> setPinVisible(true)} title="Void Transaction?"  confirmTitle="PROCEED">
+          <View style={{flexDirection:'column',justifyContent:'space-evenly', marginVertical: 2, alignItems:'center'}}>
+              <Text>Please select reason: </Text>
+              <View style={{flexDirection:'row', marginTop: 10}}>
+              <TouchableOpacity style={reason === 'Return' ?styles.selectedBtn: styles.reasonBTn} onPress={()=> setReason('Return')}>
+                <Text style={reason === 'Return' ?{fontSize: 13, color: colors.white, fontWeight:'bold'}: {fontSize: 13, color: colors.black, fontWeight:'bold'}}>Return</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={reason === 'Change Item' ?styles.selectedBtn:styles.reasonBTn} onPress={()=> setReason('Change Item')}>
+                <Text style={reason === 'Change Item' ?{fontSize: 12, color: colors.white, fontWeight:'bold'}: {fontSize: 12, color: colors.black, fontWeight:'bold'}}>Change Item</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={reason === 'Refunded' ?styles.selectedBtn:styles.reasonBTn} onPress={()=> setReason('Refunded')}>
+                <Text style={reason === 'Refunded' ?{fontSize: 13, color: colors.white, fontWeight:'bold'}:{fontSize: 13, color: colors.black, fontWeight:'bold'}}>Refunded</Text>
+              </TouchableOpacity>
+              </View>
+             
+            </View>
+          </AlertwithChild>
         <View style={{flex: 1}}>
           <AppHeader 
             centerText="Transactions"
@@ -284,9 +317,9 @@ const calculateVoidedTotal = () => {
                 <ScrollView>
                   {
                     staffs.map((item, index) => 
-                    item.status === 'Active' &&
+                    item.status === 'Active' && item.store_id === selectStoreStaff()[0]._id &&
                       <TouchableOpacity style={item.name === attendant ? [styles.storeList,{ borderColor:colors.accent}] : styles.storeList} onPress={()=> {setAttendant(item.name), setAttendantInfo(item)}}>
-                        <Text style={{textAlign: 'center', fontWeight:'700', fontSize: 17, textTransform:'uppercase'}}>{item.name}</Text>
+                        <Text style={{textAlign: 'center', fontWeight:'700', fontSize: 15, textTransform:'uppercase'}}>{item.name}</Text>
                      </TouchableOpacity>
                     )
                   }
@@ -307,13 +340,10 @@ const calculateVoidedTotal = () => {
             }
            
            
-            <Overlay isVisible={visible} onBackdropPress={toggleOverlay}>
+            <Overlay overlayStyle={{width:'75%', borderRadius: 20, padding: 10}} isVisible={visible} onBackdropPress={toggleOverlay}>
               <View style={{padding : 10,justifyContent:'center'}}>
-                  <View style={{flexDirection: 'row', justifyContent:'space-between'}}>
-                   
-                    <TouchableOpacity onPress={toggleOverlay}>
-                      <Ionicons name={'close-circle'} size={26} color={colors.red}/>
-                    </TouchableOpacity>
+                  <View style={{flexDirection: 'row', justifyContent:'center', marginBottom: 15}}>
+        
                     <Text style={{textAlign:'center', fontSize: 20, fontWeight:'bold'}}>Select Filter</Text>
                     <View/>
                   </View>
@@ -321,27 +351,28 @@ const calculateVoidedTotal = () => {
                   <Button 
                       title="Today" 
                       onPress={ ()=> getFilteredTransactions('Today')} 
+                 
                       buttonStyle={{
-                        paddingHorizontal: windowWidth/ 4, 
-                        borderRadius: 10, 
+                        paddingHorizontal: windowWidth/ 4.5, 
+                        borderRadius: 15, 
                         backgroundColor: colors.white, 
                         borderColor: colors.accent, 
                         borderWidth: 1
                         }}
-            titleStyle={{color: colors.black, fontSize: 18, fontWeight:'600'}}
+            titleStyle={{color: colors.black, fontSize: 15, fontWeight:'400'}}
                   />
                   <Spacer />
                   <Button 
                       title="This week" 
                       onPress={()=>getFilteredTransactions('This week')}
                       buttonStyle={{
-                        paddingHorizontal: windowWidth/ 4, 
-                        borderRadius: 10, 
+                        paddingHorizontal: windowWidth/ 4.5, 
+                        borderRadius: 15, 
                         backgroundColor: colors.white, 
                         borderColor: colors.accent, 
                         borderWidth: 1
                         }}
-                      titleStyle={{color: colors.black, fontSize: 18, fontWeight:'600'}}
+                      titleStyle={{color: colors.black, fontSize: 15, fontWeight:'400'}}
                 />
               </View>
             </Overlay>
@@ -366,7 +397,7 @@ const calculateVoidedTotal = () => {
                             onPress={ ()=> onSelectPersonnel(item)} 
                             buttonStyle={{
                                         paddingHorizontal: windowWidth/ 4, 
-                                        borderRadius: 10, 
+                                        borderRadius: 15, 
                                         backgroundColor: colors.white, 
                                         borderColor: colors.primary, 
                                         borderWidth: 1
@@ -384,7 +415,33 @@ const calculateVoidedTotal = () => {
               </View>
             </Overlay>
             </View>
-      
+            <Overlay  overlayStyle={{borderRadius: 25, margin: 30, width: '75%'}} isVisible={pinVisible} onBackdropPress={setPinVisible}>
+            <Text style={{textAlign:'center', fontSize: 18, fontWeight:'bold', marginVertical: 10}}>Enter store PIN</Text>
+            <View style={{padding: 20}}>
+            <SmoothPinCodeInput password mask="﹡"
+              cellStyle={{
+                borderWidth: 1,
+                borderColor: 'gray',
+                borderRadius: 15
+              }}
+              cellSize={35}
+            codeLength={6}
+            value={code}
+            onTextChange={code => setCode(code)}/>
+               <TouchableHighlight
+                    style={{ ...styles.openButton, backgroundColor: colors.primary, marginVertical: 20 }}
+
+                    onPress={()=> checkPIN()}
+                    >
+                    <Text style={styles.textStyle}>Proceed </Text>
+                    </TouchableHighlight>
+                    {
+                error.length !== 0?
+                <Text style={{textAlign:'center', color: colors.red}}>{error}</Text> : null
+            }
+            </View>
+            
+        </Overlay>
       </View>
   );
 };
@@ -528,7 +585,7 @@ voidStyle: {
             borderWidth: 1,
             paddingVertical: 8,
             marginVertical: 5,
-            borderRadius: 5,
+            borderRadius: 10,
             backgroundColor: colors.white,
             shadowColor: "#EBECF0",
             shadowOffset: {
@@ -539,8 +596,20 @@ voidStyle: {
             shadowOpacity: 0.89,
             shadowRadius: 2,
             elevation: 2,
-          }
-
-});
+          },
+          reasonBTn: {padding: 6, borderColor: colors.black, borderWidth:1,backgroundColor:colors.white, borderRadius: 15, marginVertical: 10, marginHorizontal: 2 },
+          selectedBtn: {padding: 6, borderColor: colors.primary, borderWidth:1,backgroundColor:colors.primary, borderRadius: 15, marginVertical: 10, marginHorizontal: 2 },
+          openButton: {
+            backgroundColor: "#F194FF",
+            borderRadius: 20,
+            padding: 8,
+            elevation: 2
+          },
+          textStyle: {
+            color: "white",
+            fontWeight: "bold",
+            textAlign: "center"
+          },
+        });
 
 export default TransactionScreen;

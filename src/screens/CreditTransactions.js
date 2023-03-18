@@ -16,27 +16,11 @@ import Spacer from "../components/Spacer";
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 const { width, height } = Dimensions.get('window');
-const CreditTransaction = ({navigation}) => {
+const CreditTransaction = ({navigation, route}) => {
+  const store_info = route.params.store_info;
     const { 
-        createStore,
-        deleteTask,
         stores,
-        loading,
-        createProducts,
-        products,
-        createCategories,
-        category,
-        createExpenses,
-        expenses,
-        createCustomer,
-        customers,
-        createStaff,
         staffs,
-        createList,
-        list,
-        deleteList,
-        editListQty,
-        createTransaction,
         transactions,getCustomTransaction } = useStore();
         const [visible, setVisible] = useState(false);
         const [attendant, setAttendant] = useState('');
@@ -85,7 +69,8 @@ const CreditTransaction = ({navigation}) => {
    const renderItem = ({ item }) => (
      item.payment_method === 'Credit' && stores[0].attendant_id === item.attendant_id ?
     <ListItem bottomDivider containerStyle={styles.list} onPress={()=> navigation.navigate('CreditTransactionDetailsScreen', {
-      'transactions': item
+      'transactions': item,
+      store_info
     })}>
         <Avatar source={require('../../assets/credit.png')} />
         <ListItem.Content>

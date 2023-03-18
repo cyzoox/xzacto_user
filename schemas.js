@@ -672,6 +672,9 @@ class Expenses {
       attendant: "string",
       attendant_id: "string",
       amount: "float",
+      year: "string",
+      year_month: "string",
+      year_week: "string"
     },
     primaryKey: "_id",
   };
@@ -1542,7 +1545,8 @@ class Transactions {
     vat,
     received,
     change, 
-    profit
+    profit,
+    void_reason
   }) {
     this._partition = partition;
     this._id = id;
@@ -1566,7 +1570,8 @@ class Transactions {
     this.vat = vat,
     this.received = received,
     this.change = change,
-    this.profit = profit
+    this.profit = profit,
+    this.void_reason = void_reason
   }
  
   static schema = {
@@ -1594,7 +1599,8 @@ class Transactions {
       vat: "float",
       received: "float",
       change: "float",
-      profit: "float?"
+      profit: "float?",
+      void_reason: "string?"
     },
     primaryKey: "_id",
   };
@@ -1683,6 +1689,7 @@ class TR_Details {
       year_week: 'string',
       date: 'string',
       timeStamp: 'int',
+      product_id: 'string',
       status: 'string',
       attendant_name: "string",
       attendant_id: "string",

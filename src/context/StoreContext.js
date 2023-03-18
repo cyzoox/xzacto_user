@@ -10,6 +10,7 @@ import { useCallback } from 'react';
 const StoreContext = React.createContext(null);
 
 const StoreProvider = ({ children, projectPartition, store_info }) => {
+  console.log('store_info',store_info)
     const date = moment().unix()
     const [list, setList] = useState([]);
     const [products, setProducts] = useState([]);
@@ -67,7 +68,7 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
       ],
       sync: {
         user: user,
-        partitionValue:  `project=${user.id}`,
+        partitionValue: projectPartition,
         newRealmFileBehavior: OpenRealmBehaviorConfiguration,
         existingRealmFileBehavior: OpenRealmBehaviorConfiguration,
       },
@@ -85,32 +86,35 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
 
         realmRef.current = projectPOS;
 
-      const syncProducts = projectPOS.objects("Products");
-      // const filteredProducts = syncProducts.filtered("store_id == $0", store_info._id);
-      // let sortedProducts = syncProducts.sorted("name");
-      setProducts([...syncProducts]);
-      syncProducts.addListener(() => {
-        setProducts([...syncProducts]);
-     
-      });
+        const getCategory = projectPOS.objects("Categories");
 
-      const syncStore = projectPOS.objects("Stores");
-      let sortedStore = syncStore.sorted("name");
-      setStores([...sortedStore]);
-      sortedStore.addListener(() => {
-        
+         let sortedCategory = getCategory.sorted("name");
+        setCategory([...sortedCategory]);
+        sortedCategory.addListener(() => {
+          setCategory([...sortedCategory]);
+       
+        });
+
+        const syncStore = projectPOS.objects("Stores");
+        let sortedStore = syncStore.sorted("name");
         setStores([...sortedStore]);
-        setLoading(false)
-      });
+        sortedStore.addListener(() => {
+          
+          setStores([...sortedStore]);
+          setLoading(false)
+        });
 
-      const getCategory = projectPOS.objects("Categories");
-      // const filteredCategory = getCategory.filtered("store_id == $0", store_info._id);
-      // let sortedCategory = getCategory.sorted("name");
-      setCategory([...getCategory]);
-      getCategory.addListener(() => {
-        setCategory([...getCategory]);
+        const syncProducts = projectPOS.objects("Products");
+        let sortedProducts = syncProducts.sorted("name");
+        setProducts([...sortedProducts]);
+        sortedProducts.addListener(() => {
+          setProducts([...sortedProducts]);
      
-      });
+        });
+
+   
+
+ 
 
       const syncExpenses = projectPOS.objects("Expenses");
       // const filteredExpenses = syncExpenses.filtered("store_id == $0", store_info._id);
@@ -371,6 +375,18 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
     });
   };
 
+  const updateCustomer = (customer, new_customer) => {
+    // One advantage of centralizing the realm functionality in this provider is
+    // that we can check to make sure a valid status was passed in here.
+    const projectPOS = realmRef.current;
+    projectPOS.write(() => {
+      customer.name = new_customer.name
+      customer.address = new_customer.address
+      customer.mobile_no = new_customer.mobile_no
+      customer.credit_balance =  new_customer.credit_balance
+    });
+  };
+
   const createProducts = ( product ) => {
     const projectPOS = realmRef.current;
     projectPOS.write(() => {
@@ -493,6 +509,7 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
     lists?.forEach(item => {
     
       let list = {
+
         name : item.name,
         partition: item._partition,
         brand: item.brand,
@@ -503,24 +520,18 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
         store_id: item.store_id,
         store: item.store,
         quantity: item.quantity,
-        id: item._id,
+        _id: item._id,
         timeStamp: item.timeStamp
 
       }
-      projectPOS.write(() => {
-        projectPOS.create(
-          "List",
-          new List(list)
-        );
-       
-      });
+      onSaveList()
     }); 
 
     ondeleteArchive();
   };
 
   const saveList = ( lists,trid, name, id ) => {
-    console.log(lists)
+
     const projectPOS = realmRef.current;
     const date = moment().unix()
     lists.forEach(item => {
@@ -550,6 +561,7 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
         addon_price: item.addon_price,
         addon_cost: item.addon_cost,
         option: item.option,
+        void_reason:''
       }
       projectPOS.write(() => {
         projectPOS.create(
@@ -706,22 +718,27 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
     ondeleteList()
   }
 
-  const onVoidTransaction = async(item) => {
+  const onVoidTransaction = async(item, reason) => {
     const projectPOS = realmRef.current;
     const transaction = projectPOS.objects("Transactions");
     const filteredTransaction = transaction.filtered("_id == $0", item._id);
     const tr_details = projectPOS.objects("TR_Details");
     const filteredTrDetails = tr_details.filtered("tr_id == $0", item._id);
+    const productss = projectPOS.objects("Products");
+   
     projectPOS.write(() => {
       filteredTransaction[0].status = "Voided";
+      filteredTransaction[0].void_reason = reason;
 
-      filteredTrDetails.forEach(item => {
-        const products = projectPOS.objects("Products");
-        const filteredProducts = products.filtered("store_id == $0", item.store_id);
-        const filteredProducts2 = filteredProducts.filtered("_id == $0", item.product_id);
-
-        item.status = "Voided"
-        filteredProducts2[0].stock += item.quantity;
+      filteredTrDetails.forEach(items => {
+       
+        const filteredProducts = productss.filtered("store_id == $0", items.store_id);
+        const filteredProducts2 = filteredProducts.filtered("_id == $0", items.product_id);
+      
+     
+        items.status = "Voided"
+        items.void_reason = reason
+        filteredProducts2[0].stock += items.quantity;
       });
       });
   }
@@ -775,7 +792,7 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
   const getCustomTransaction = (type, value, personnel) => {
   
     const projectPOS = realmRef.current;
-    console.log(type, value, personnel,projectPOS)
+   
     switch (type) {
       
       case 'Today':
@@ -901,6 +918,33 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
       })
     );
   }
+  const onLogIn = async(item, store_info) => {
+    const projectPOS = realmRef.current;
+    const store = projectPOS.objects("Stores");
+    const filteredStore = store.filtered("_id == $0", store_info._id);
+
+    let newStoreInfo = {
+        _id : store_info._id,
+        _partition: store_info._partition,
+        branch: store_info.branch,
+        name: store_info.name,
+        owner: store_info.owner,
+        password: store_info.password,
+        attendant: item.name,
+        attendant_id: item._id
+    }
+
+    const storeValue = JSON.stringify(newStoreInfo)
+    await AsyncStorage.setItem('@store', storeValue)
+
+    projectPOS.write(() => {
+      store_info.attendant_id = item._id;
+      store_info.attendant = item.name;
+      filteredStore[0].attendant_id = item._id;
+      filteredStore[0].attendant = item.name
+      });
+
+  }
   
   const deleteItem = useCallback((itemToDelete) => {
     setProductss((currentItems) =>
@@ -973,7 +1017,8 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
             option,
             inventory,
              stores,
-             getCustomStore
+             getCustomStore,
+             onLogIn
           }}
         >
             {children}

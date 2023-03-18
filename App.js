@@ -32,6 +32,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Fastfood from "./src/screens/FastfoodScreen";
 import HomeScreenII from "./src/screens/HomeScreenII";
 import SignupScreen from "./src/screens/SignupScreen";
+import CustomersAndCreditScreen from "./src/screens/CustomersAndCreditScreen";
 
 
 const Stack = createStackNavigator();
@@ -60,23 +61,23 @@ function DrawerScreen2() {
 
 function DrawerScreen({store_info}) {
   return (
-    <Drawer.Navigator drawerContent={(props) => <DrawerContent {...props}/>}>
+    <Drawer.Navigator  backBehavior="history" drawerContent={(props) => <DrawerContent initialParams={{store_info: store_info}} {...props}/>}>
 
     <Drawer.Screen name="Home"    
-      initialParams={{
-      store_info: store_info
-        }} 
+      initialParams={{store_info: store_info}} 
         component={HomeScreen} />
-    <Drawer.Screen name="Checkout" component={CheckoutScreen} />
-    <Drawer.Screen name="Archive" component={Archives} />
-    <Drawer.Screen name="Expenses" component={ExpensesScreen} />
-    <Drawer.Screen name="Settings" component={Settings} />
-    <Drawer.Screen name="Customer" component={CustomerScreen} />
-    <Drawer.Screen name="Transactions" component={Transactions} />
-    <Drawer.Screen name="ZReadReport" component={ZReadReport} />
-    <Drawer.Screen name="Attendance" component={AttendanceScreen} />
-    <Drawer.Screen name="Credits" component={Credits} />
-    <Drawer.Screen name="Return" component={ReturnScreen} />
+    <Drawer.Screen initialParams={{store_info: store_info}}  name="Checkout" component={CheckoutScreen} />
+    <Drawer.Screen initialParams={{store_info: store_info}}  name="Archive" component={Archives} />
+    <Drawer.Screen initialParams={{store_info: store_info}}  name="Expenses" component={ExpensesScreen} />
+    <Drawer.Screen initialParams={{store_info: store_info}}  name="Settings" component={Settings} />
+    <Drawer.Screen initialParams={{store_info: store_info}}  name="Customer" component={CustomersAndCreditScreen} />
+    <Drawer.Screen initialParams={{store_info: store_info}}  name="Transactions" component={TransactionScreen} />
+    <Drawer.Screen initialParams={{store_info: store_info}}  name="TransactionDetailsScreen" component={TransactionSetailsScreen} />
+    <Drawer.Screen initialParams={{store_info: store_info}}  name="ZReadReport" component={ZReadReport} />
+    <Drawer.Screen initialParams={{store_info: store_info}}  name="Attendance" component={AttendanceScreen} />
+    <Drawer.Screen initialParams={{store_info: store_info}}  name="Credits" component={Credits} />
+    <Drawer.Screen initialParams={{store_info: store_info}}  name="CreditTransactionDetailsScreen" component={CreditTransactionSetailsScreen} />
+    <Drawer.Screen initialParams={{store_info: store_info}}  name="Return" component={ReturnScreen} />
   </Drawer.Navigator>
   );
 }

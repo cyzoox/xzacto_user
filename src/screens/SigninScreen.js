@@ -38,10 +38,8 @@ const SigninScreen = ({ navigation }) => {
     // If there is a user logged in, go to the Projects page.
     
     AnimatedSplash.hide()
-    if (user != null) {
+    if (user !== null) {
       readItemFromStorage();
-    }else{
-      
     }
   }, [user]);
 
@@ -97,14 +95,14 @@ const SigninScreen = ({ navigation }) => {
     </View>
   </ImageBackground>
   
-  <View style={{width: '90%', marginTop: 20, marginHorizontal:20}}>
+  {/* <View style={{width: '90%', marginTop: 20, marginHorizontal:20}}>
     <Text style={{textAlign:'center', color: colors.green, fontSize: 20, fontWeight:'700'}}>
       OR
     </Text>
     <TouchableOpacity onPress={()=> navigation.navigate('SignupScreen')} style={[styles.button,{backgroundColor:colors.green}]}>
   <Text style={[styles.buttonText,{color: colors.white}]}>REGISTER</Text>
   </TouchableOpacity>
-  </View>
+  </View> */}
 
     <RNCamera
           style={styles.preview}

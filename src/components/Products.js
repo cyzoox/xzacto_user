@@ -15,25 +15,19 @@ import Feather from 'react-native-vector-icons/Feather'
 import FastImage from 'react-native-fast-image'
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
-const KEYS_TO_FILTERS = ['name', 'category'];
+const KEYS_TO_FILTERSs = ['store_id'];
+const KEYS_TO_FILTERS = ['category'];
 import BigList from "react-native-big-list";
 
 import EvilIcons from 'react-native-vector-icons/EvilIcons'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-export default function Products({ navigation, search,toggleSearch}) {
+export default function Products({ navigation, search,toggleSearch, store_info}) {
   const { user } = useAuth();
 
   const { 
-  
     stores,
-
     products,
-
     createList,
-    list,
- 
-    store_info,
-    archiveInfo,
     onSaveList,
      products_list,
      inventory,
@@ -114,8 +108,8 @@ export default function Products({ navigation, search,toggleSearch}) {
     return total;
     }
     
-
-    const filteredProducts = products.filter(createFilter(term, KEYS_TO_FILTERS))
+    const filteredProducts = products.filter(createFilter(store_info._id, KEYS_TO_FILTERSs))
+    const filteredProductss = filteredProducts.filter(createFilter(term, KEYS_TO_FILTERS))
 
     const onTabChange = (sterm) => {
       setTerm(sterm)
@@ -132,6 +126,7 @@ export default function Products({ navigation, search,toggleSearch}) {
    
 
     const onSaveLists = (item) => {
+      console.log(item)
       let list = {
         _partition: `project=${user.id}`,
         _id: item._id,
@@ -146,15 +141,16 @@ export default function Products({ navigation, search,toggleSearch}) {
         quantity: 1,
         uid: item.pr_id,
         timeStamp: moment().unix(),
-        addon: 't',
+        addon: '',
         addon_price: 0,
         addon_cost: 0,
-        option: 't',
+        option: '',
         withAddtional: false
       }
       onSaveList(list, user, store_info)
     }
     const onSaveWithAddon = () => {
+      console.log('bhdjj')
       let list = {
         _partition: `project=${user.id}`,
         _id: product_info._id,
@@ -222,7 +218,8 @@ const onselectOption =(item) => {
                  headers: { Authorization: 'auth-token' },
                  priority: FastImage.priority.high,
              }}
-             resizeMode={FastImage.resizeMode.cover}
+             resizeMode={FastImage.resizeMode.contain}
+
          />  
   {/* {
    item.stock <= 0 ?
@@ -235,7 +232,8 @@ const onselectOption =(item) => {
          <View>
            <Text style={{fontSize: 14, color: colors.primary, fontWeight: '500',textAlign:'center'}}>{formatMoney(item.sprice, { symbol: "₱", precision: 2 })}</Text>
            <Text style={styles.itemName}>{item.name}</Text>
-           <Text style={{color: 'gray',textAlign:'center', fontSize: 13}}>{Math.round(item.stock * 100) / 100} {item.unit}</Text>
+           <Text style={{color: 'gray',textAlign:'center', fontSize: 13}}>{item.stock} {item.unit}</Text>
+         
          </View>
          
          {
@@ -284,9 +282,9 @@ const onselectOption =(item) => {
           </TouchableOpacity>
         </SearchBar>
         }
-    <Categories  onTabChange={onTabChange}/>
+    <Categories  onTabChange={onTabChange} store_info={store_info}/>
     <BigList
-      data={filteredProducts}
+      data={filteredProductss}
       numColumns={3} // Set the number of columns
       renderItem={_renderitem}
       keyExtractor={item => item._id}
@@ -518,7 +516,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     backgroundColor: colors.white, 
     flexDirection: 'column',
-    borderRadius: 15,
+    borderRadius: 7,
     shadowColor: "#EBECF0",
     shadowOffset: {
       width: 0,
@@ -561,14 +559,14 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   stretch: {
-    width: windowWidth /3 - 13,
+    width: windowWidth /3 - 10,
 
     height: 100,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10
   },
   stretch2: {
-    width: windowWidth-20,
+    width: windowWidth-15,
     height: windowHeight /3 - 20,
     borderRadius: 10,
   },

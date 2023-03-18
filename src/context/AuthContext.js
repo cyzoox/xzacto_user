@@ -96,6 +96,7 @@ const AuthProvider = ({ children }) => {
       return;
     }
     user.logOut();
+
     setUser(null);
   };
 

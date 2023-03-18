@@ -11,8 +11,8 @@ import {BluetoothEscposPrinter, BluetoothManager, BluetoothTscPrinter} from "rea
 
 import moment from 'moment'
 const TransactionSetailsScreen = ({navigation, route}) => {
-const { transactions } = route.params;
-const {getTRDetails,trdetails, store_info } = useStore();
+const { transactions, store_info } = route.params;
+const {getTRDetails,trdetails } = useStore();
 console.log(trdetails)
 const printReceipt = async () => {
   try {
@@ -181,6 +181,9 @@ const printReceipt = async () => {
                 <Text style={{fontWeight:'500'}}>Customer : {transactions.customer_name ? transactions.customer_name : "None"}</Text>
                 <Text style={{fontWeight:'500'}}>Date :           {transactions.date}</Text>
                 <Text style={{fontWeight:'500'}}>Receipt # :  {transactions.timeStamp}</Text>
+                <Text style={{fontWeight:'500'}}>Status :  {transactions.status}</Text>
+                <Text style={{fontWeight:'500'}}>Customer Name :  {transactions.customer_name}</Text>
+                <Text style={{fontWeight:'500'}}>Cashier Name :  {transactions.attendant_name}</Text>
               </View>
               <TouchableOpacity onPress={()=> printReceipt()}>
               <AntDesign name={'printer'} size={25} color={colors.primary}/>
@@ -202,23 +205,37 @@ const printReceipt = async () => {
                 />
                 <ListItem>
                   <ListItem.Content style={{flexDirection:'row', justifyContent:'space-between'}}>
-                      <Text style={{fontWeight:'bold'}}>Sub Total</Text>
+                      <Text >Sub Total</Text>
                       <Text></Text>
-                      <Text style={{fontWeight:'bold', color: colors.statusBarCoverDark}}>{formatMoney(calculateTotal(), { symbol: "₱", precision: 2 })}</Text>
+                      <Text style={{ color: colors.statusBarCoverDark}}>{formatMoney(calculateTotal(), { symbol: "₱", precision: 2 })}</Text>
                   </ListItem.Content>
                 </ListItem>
                 <ListItem style={{marginTop: -20}}>
                   <ListItem.Content style={{flexDirection:'row', justifyContent:'space-between'}}>
-                      <Text style={{fontWeight:'bold'}}>Discount</Text>
+                      <Text style={{fontWeight:'bold', color: colors.red}}>Discount</Text>
                       <Text></Text>
-                      <Text style={{fontWeight:'bold', color: colors.statusBarCoverDark}}>-{formatMoney(transactions.discount, { symbol: "₱", precision: 2 })}</Text>
+                      <Text style={{fontWeight:'bold', color: colors.red}}>-{formatMoney(transactions.discount, { symbol: "₱", precision: 2 })}</Text>
                   </ListItem.Content>
                 </ListItem>
                 <ListItem style={{marginTop: -20}}>
                   <ListItem.Content style={{flexDirection:'row', justifyContent:'space-between'}}>
-                      <Text style={{fontWeight:'bold'}}>Total</Text>
+                      <Text style={{fontWeight:'bold', fontSize: 18, color:colors.green}}>Total</Text>
                       <Text></Text>
-                      <Text style={{fontWeight:'bold', color: colors.statusBarCoverDark}}>{formatMoney(calculateTotal()-transactions.discount, { symbol: "₱", precision: 2 })}</Text>
+                      <Text style={{fontWeight:'bold', fontSize: 18, color:colors.green}}>{formatMoney(calculateTotal()-transactions.discount, { symbol: "₱", precision: 2 })}</Text>
+                  </ListItem.Content>
+                </ListItem>
+                <ListItem style={{marginTop: -20}}>
+                  <ListItem.Content style={{flexDirection:'row', justifyContent:'space-between'}}>
+                      <Text >VAT Sales</Text>
+                      <Text></Text>
+                      <Text >{formatMoney(calculateTotal()-((calculateTotal()-transactions.discount)*0.12), { symbol: "₱", precision: 2 })}</Text>
+                  </ListItem.Content>
+                </ListItem>
+                <ListItem style={{marginTop: -20}}>
+                  <ListItem.Content style={{flexDirection:'row', justifyContent:'space-between'}}>
+                      <Text >VAT Amount</Text>
+                      <Text></Text>
+                      <Text >{formatMoney((calculateTotal()-transactions.discount)*0.12, { symbol: "₱", precision: 2 })}</Text>
                   </ListItem.Content>
                 </ListItem>
             </Card>

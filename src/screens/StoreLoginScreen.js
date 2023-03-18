@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Text, StyleSheet, View, TouchableOpacity, FlatList, TouchableWithoutFeedback , Dimensions, RefreshControl} from "react-native";
+import { Text, StyleSheet, View, TouchableOpacity, FlatList, TouchableWithoutFeedback , Dimensions, RefreshControl, Alert as Alerts, BackHandler,TouchableHighlight} from "react-native";
 import AppHeader from "../components/AppHeader";
 import EvilIcons from 'react-native-vector-icons/EvilIcons'
 import colors from "../themes/colors";
 import { useStore } from "../context/StoreContext";
-import { ListItem, Avatar, Overlay , Button} from "react-native-elements";
+import { ListItem, Avatar, Overlay } from "react-native-elements";
 import SmoothPinCodeInput from 'react-native-smooth-pincode-input';
 import { useAuth } from "../context/AuthContext";
-
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useAsyncStorage} from '@react-native-async-storage/async-storage';
 import CurrencyPicker from "react-native-currency-picker"
@@ -16,6 +16,7 @@ import Loader from "../components/Loader";
 import { FlatGrid } from 'react-native-super-grid';
 import Feather from 'react-native-vector-icons/Feather'
 import FastImage from 'react-native-fast-image'
+
 const windowWidth = Dimensions.get('window').width;
 const wait = (timeout) => {
   return new Promise(resolve => setTimeout(resolve, timeout));
@@ -32,7 +33,7 @@ let currencyPickerRef = undefined;
     const [visible, setVisible] = useState(false);
     const [code, setCode] = useState('');
     const [info, setInfo] = useState([]);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState('');
     const [currency, setCurrency] = useState(null);
     const [alert, setAlert] = useState(false);
     const [text, setText] = useState('');
@@ -62,18 +63,35 @@ let currencyPickerRef = undefined;
           }
       };
 
-      useEffect(
-        () =>
-         {  navigation.addListener('beforeRemove', (e) => {
-          e.preventDefault();
-          return
-      })    
-      readItemFromStorage();
-          },
-        [navigation, hasUnsavedChanges]
+      useFocusEffect(
+        React.useCallback(() => {
+          readItemFromStorage();
+          const backAction = () => {
+            Alerts.alert('Hold on!', 'Are you sure you want to go back?', [
+              {
+                text: 'Cancel',
+                onPress: () => null,
+                style: 'cancel',
+              },
+              {
+                text: 'Logout',
+                onPress: () =>{ navigation.goBack(),  user.logOut();},
+  
+              },
+              {text: 'Exit App', onPress: () => BackHandler.exitApp()},
+            ]);
+            return true;
+          };
+  
+          const backHandler = BackHandler.addEventListener(
+            'hardwareBackPress',
+            backAction,
+          );
+  
+          return () => backHandler.remove();
+        }, [])
       );
 
-    
 
     const onClickStore = (item) => {
         setVisible(true)
@@ -109,7 +127,7 @@ let currencyPickerRef = undefined;
 
                 navigation.navigate("Storeboard", {
                   name: "My Project",
-                  projectPartition: projectPartition ,
+                  projectPartition: `project=${user.id}` ,
                   store_info : JSON.parse(storeValue),
           
                 });
@@ -182,14 +200,14 @@ let currencyPickerRef = undefined;
        
           <View style={{marginBottom: 10}}>
            
-            <Text style={styles.itemName}>{item.name}</Text>
-            <Text style={styles.itemName}>{item.store_type}</Text>
+            <Text style={[styles.itemName,{fontSize: 16}]}>{item.name}</Text>
+            <Text style={[styles.itemName,{fontWeight:'400'}]}>{item.branch}</Text>
           </View>
       </View>
   </TouchableWithoutFeedback>
       )}
     />
-        <Overlay isVisible={visible} onBackdropPress={setVisible}>
+        {/* <Overlay isVisible={visible} onBackdropPress={setVisible}>
             <Text style={{textAlign:'center', fontSize: 18, fontWeight:'bold', marginVertical: 10}}>Enter Password</Text>
             <View style={{padding: 20}}>
             <SmoothPinCodeInput password mask="﹡"
@@ -208,8 +226,34 @@ let currencyPickerRef = undefined;
                 <Text style={{textAlign:'center', color: colors.red}}>{error}</Text>
             }
             </View>
+        </Overlay> */}
+        <Overlay  overlayStyle={{borderRadius: 25, margin: 30, width: '75%'}} isVisible={visible} onBackdropPress={setVisible}>
+            <Text style={{textAlign:'center', fontSize: 18, fontWeight:'bold', marginVertical: 10}}>Enter store PIN</Text>
+            <View style={{padding: 20}}>
+            <SmoothPinCodeInput password mask="﹡"
+              cellStyle={{
+                borderWidth: 1,
+                borderColor: 'gray',
+                borderRadius: 15
+              }}
+              cellSize={35}
+            codeLength={6}
+            value={code}
+            onTextChange={code => setCode(code)}/>
+               <TouchableHighlight
+                    style={{ ...styles.openButton, backgroundColor: colors.primary, marginVertical: 20 }}
+
+                    onPress={()=> onCheckPassword()}
+                    >
+                    <Text style={styles.textStyle}>Proceed </Text>
+                    </TouchableHighlight>
+                    {
+                error.length !== 0?
+                <Text style={{textAlign:'center', color: colors.red}}>{error}</Text> : null
+            }
+            </View>
+            
         </Overlay>
-        
   </View>
   );
 };
@@ -219,18 +263,19 @@ const styles = StyleSheet.create({
     flex: 1
   },
   stretch: {
-    width: windowWidth /3.2 - 40,
+    width: windowWidth /3.2 - 25,
     height: 100,
     borderTopLeftRadius: 10,
-    borderTopRightRadius: 10
+    borderTopRightRadius: 10,
+    marginTop: -50
   }, itemContainer: {
-    flex:1,
+  
     justifyContent:'center',
     alignItems:'center',
-    marginTop: 5,
-    backgroundColor: colors.white, 
+    marginTop: 50,
+    backgroundColor: colors.grey, 
     flexDirection: 'column',
-    borderRadius: 15,
+    borderRadius: 5,
     shadowColor: "#EBECF0",
     shadowOffset: {
       width: 0,
@@ -243,10 +288,21 @@ const styles = StyleSheet.create({
  
   },
   itemName: {
-    fontSize: 14,
-    color: '#000',
-    fontWeight: '400',
+    fontSize: 13,
+    color: colors.primary,
+    fontWeight: 'bold',
     textAlign:'center'
+  },
+  openButton: {
+    backgroundColor: "#F194FF",
+    borderRadius: 20,
+    padding: 8,
+    elevation: 2
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center"
   },
 });
 

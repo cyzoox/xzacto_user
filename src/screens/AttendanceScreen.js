@@ -12,10 +12,13 @@ import uuid from 'react-native-uuid';
 import { useAuth } from "../context/AuthContext";
 import SmoothPinCodeInput from 'react-native-smooth-pincode-input';
 import Alert from "../components/Alert";
+const KEYS_TO_FILTERS = ['store_id'];
+import SearchInput, { createFilter } from 'react-native-search-filter';
 
-const AttendanceScreen = ({navigation}) => {
+const AttendanceScreen = ({navigation, route}) => {
+  const store_info = route.params.store_info;
   const {user} = useAuth();
-  const {staffs, store_info,  createAttendanceLog, attendance_logs, onLogIn , onLogOut} = useStore();
+  const {staffs,  createAttendanceLog, attendance_logs, onLogIn , onLogOut} = useStore();
   const [expanded, setExpanded] = useState(true);
   const [visible, setVisible] = useState(false);
   const [invisible, setInVisible] = useState(false);
@@ -26,7 +29,8 @@ const AttendanceScreen = ({navigation}) => {
   const [attendance, setAttendanceInfo] = useState(null);
 
   const handlePress = () => setExpanded(!expanded);
-
+    
+  const filteredStaffs = staffs.filter(createFilter(store_info._id, KEYS_TO_FILTERS))
 
 
   const onCreateLogs = () => {
@@ -125,7 +129,7 @@ const AttendanceScreen = ({navigation}) => {
             } 
           />
            <FlatList
-              data={staffs}
+              data={filteredStaffs}
               renderItem={renderItem}
               keyExtractor={item => item._id}
             />

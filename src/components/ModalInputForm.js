@@ -25,7 +25,7 @@ export function ModalInputForm({ title, children, onSave , fullScreen, displayCo
     <>
       <Overlay
         isVisible={overlayVisible}
-        overlayStyle={{ width: "85%" }}
+        overlayStyle={{ width: "75%", borderRadius: 15 }}
         onBackdropPress={() => setOverlayVisible(false)}
         fullScreen={fullScreen}
       >
@@ -40,10 +40,10 @@ export function ModalInputForm({ title, children, onSave , fullScreen, displayCo
         </View>
         <View style={{flexDirection:'row', justifyContent:'space-evenly', marginVertical: 15}}>
             <View  style={{flex: 1, marginHorizontal: 15}} >
-                <Button buttonStyle={{backgroundColor: colors.red}} title="Cancel" onPress={()=> setOverlayVisible(false)}/>
+                <Button buttonStyle={{backgroundColor: colors.accent, borderRadius: 15}} title="Cancel" onPress={()=> setOverlayVisible(false)}/>
             </View>
             <View  style={{flex: 1, marginHorizontal: 15}} >
-             <Button buttonStyle={{backgroundColor: colors.green}}  title="Save" onPress={()=> onClickSave()}/>
+             <Button buttonStyle={{backgroundColor: colors.primary, borderRadius: 15}}  title="Save" onPress={()=> onClickSave()}/>
             </View>
         </View>
      

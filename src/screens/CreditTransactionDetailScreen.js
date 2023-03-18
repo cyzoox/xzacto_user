@@ -11,8 +11,9 @@ import {BluetoothEscposPrinter, BluetoothManager, BluetoothTscPrinter} from "rea
 
 import moment from 'moment'
 const CreditTransactionSetailsScreen = ({navigation, route}) => {
-const { transactions } = route.params;
-const {getTRDetails,trdetails, store_info } = useStore();
+
+const { transactions, store_info } = route.params;
+const {getTRDetails,trdetails } = useStore();
 
 
   useEffect(() => {

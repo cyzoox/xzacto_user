@@ -23,6 +23,7 @@ export default function List({ navigation, clearAll, archive, screen, toggleScan
     deleteItem,
     products
   } = useStore();
+  console.log(products_list)
     
     const [edit, toggleEdit] = useState(false);
     const [newQty, setNewQty] = useState('');
@@ -57,17 +58,29 @@ export default function List({ navigation, clearAll, archive, screen, toggleScan
  
 
   const onPressSave = () => {
-    products.map((x) => {
-       
-      if (x.pr_id === data.uid){
-        if(newQty > x.stock){
-          return alertVisible(true);
-        }else{
-          editListQty(data, parseFloat(newQty))
-          setCustomQtyVisible(false)
-        }
-        }
-    })
+    const foundObject = products.find(obj => obj._id === data._id);
+
+    if (foundObject) {
+      if (foundObject.stock > newQty) {
+        editListQty(data, parseFloat(newQty))
+             setCustomQtyVisible(false)
+      } else {
+        alertVisible(true);
+            return
+      }
+    } 
+    // products.map((x) => {
+
+    //   if (x.pr_id === data.uid){
+    //     if(newQty >= x.stock){
+    //       alertVisible(true);
+    //       return
+    //     }else{
+    //       editListQty(data, parseFloat(newQty))
+    //       setCustomQtyVisible(false)
+    //     }
+    //     }
+    // })
 
 
   }
@@ -93,7 +106,7 @@ export default function List({ navigation, clearAll, archive, screen, toggleScan
         <View style={{ flex: 1, alignSelf: 'flex-start', flexDirection: 'row', backgroundColor:colors.white, paddingVertical: 10, justifyContent:'space-evenly' }}>
         <View style={[styles.cellContainer, {flex: 2}]}>
              <Text style={styles.cellStyle}>{item.name}</Text>
-        <Text style={[styles.cellStyle,{ fontSize:10}]}>with {item.addon}, {item.option}</Text>
+      {item.addon || item.option ?  <Text style={[styles.cellStyle,{ fontSize:10}]}>with {item.addon}, {item.option}</Text> : null}
         </View>
         <View style={[styles.cellContainer, {flex: 2.5}]}>
             <View style={{flexDirection:'row',  alignItems:'center'}}>

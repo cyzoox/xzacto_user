@@ -23,6 +23,7 @@ import RNBeep from 'react-native-a-beep';
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import formatMoney from 'accounting-js/lib/formatMoney.js'
 const CheckoutScreen = ({ navigation, route }) => {
+  const store_info = route.params.store_info;
 
   const { user } = useAuth();
   const { 
@@ -30,11 +31,23 @@ const CheckoutScreen = ({ navigation, route }) => {
     products,
     createList,
     createTransaction,
-    store_info , 
     createCreditLogs,
-    products_list
+    products_list,
+
   } = useStore();
     
+  const selectStoreStaff = () => {
+    let store = []
+    stores.forEach(item => {
+      if(item._id === store_info._id){
+       store = store.concat(item)
+      }
+    });
+    return store;
+  }
+
+
+  
   const [id, setCusId]= useState('');
   const [name, setCusName]= useState('');
   
@@ -55,6 +68,7 @@ const CheckoutScreen = ({ navigation, route }) => {
   const [discount_name, setDiscountName] = useState('');
   const [autoPrint, setAutoPrint] = useState(false);
   const [checked, setChecked] = useState(false);
+  const [custom_customer, setCustomCustomer] = useState('')
 
   const barcodeReceived = (e) => {
 
@@ -140,19 +154,20 @@ const calculateTotalProfit = () => {
           store_id : store_info._id,
           date: moment.unix(date).format('MMMM DD, YYYY'),
           timeStamp: moment().unix(),
-          customer_name: name,
+          customer_name: name.length === 0 ? custom_customer : name,
           customer_id: id,
           total: calculateTotal()-(calculateTotal()*(selected/100)),
           year :moment.unix(date).format('YYYY'),
           year_month :moment.unix(date).format('MMMM-YYYY'),
           year_week :moment.unix(date).format('WW-YYYY'),
-          attendant_name: stores[0].attendant,
-          attendant_id: stores[0].attendant_id,
+          attendant_name: selectStoreStaff()[0].attendant,
+          attendant_id: selectStoreStaff()[0].attendant_id,
           
 
         }
         createCreditLogs(products_list, details)
         onSaveTransaction('Credit');
+        setCustomCustomer('')
     }
  
 
@@ -165,15 +180,15 @@ const calculateTotalProfit = () => {
       partition: `project=${user.id}`,
       date: moment.unix(date).format('MMMM DD, YYYY'),
       timeStamp: moment().unix(),
-      customer_name: name,
+      customer_name: name.length === 0 ? custom_customer : name,
       customer_id: id,
       total:calculateTotal()-(calculateTotal()*(selected/100)),
       id: uuid.v4(),
       year :moment.unix(date).format('YYYY'),
       year_month :moment.unix(date).format('MMMM-YYYY'),
       year_week :moment.unix(date).format('WW-YYYY'),
-      attendant_name: stores[0].attendant,
-      attendant_id: stores[0].attendant_id,
+      attendant_name: selectStoreStaff()[0].attendant,
+      attendant_id: selectStoreStaff()[0].attendant_id,
       payment_method: pm,
       status: 'Completed',
       total_items: calculateTotalItems(),
@@ -182,7 +197,8 @@ const calculateTotalProfit = () => {
       vat: 12,
       profit: calculateTotalProfit(),
       received: received,
-      change:change
+      change:change,
+      void_reason: ''
     }
 
 
@@ -193,6 +209,7 @@ const calculateTotalProfit = () => {
     setSelected(0)
     setCusId('')
     setCusName('')
+    setCustomCustomer('')
     navigation.goBack();
   } 
 
@@ -262,12 +279,7 @@ const calculateTotalProfit = () => {
             <TouchableOpacity onPress={()=> setSelected(10)} style={ selected === 10 ? styles.discountButton2 : styles.discountButton}>
               <Text style={ selected === 10 ?{color: colors.white}:{color: colors.black}}>10%</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={()=> setSelected(20)} style={ selected === 20 ? styles.discountButton2 : styles.discountButton}>
-              <Text style={ selected === 20 ?{color: colors.white}:{color: colors.black}}>20%</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={()=> setSelected(50)} style={ selected === 50 ? styles.discountButton2 : styles.discountButton}>
-              <Text style={ selected === 50 ?{color: colors.white}:{color: colors.black}}>50%</Text>
-            </TouchableOpacity>
+        
           </View>
           <View style={{flexDirection:'row',justifyContent:'space-evenly', marginVertical: 2, alignItems:'center'}}>
           <Text style={{textAlign:'center', fontSize: 16, fontWeight: '700'}}>Custom : </Text>
@@ -320,7 +332,19 @@ const calculateTotalProfit = () => {
                 <EvilIcons name={'close-o'} size={25} color={colors.white} style={{fontWeight:'700'}}/>
                 </TouchableOpacity>
               </View>
-            </Card> : null
+            </Card> : 
+            
+            <View>
+               <TextInput 
+              mode="outlined"
+              label="Customer name"
+              value={custom_customer}
+              onChangeText={(text)=> setCustomCustomer(text)}
+             
+              style={{ textAlign:'center',borderRadius: 10,  height: 30, margin:5}}
+              theme={{colors: {primary: colors.accent, underlineColor: 'transparent'}}}
+            />
+            </View>
           }
          
           {
@@ -372,8 +396,8 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 30
   },
-  discountButton: {paddingVertical: 4,paddingHorizontal: 10, borderWidth: 1, borderColor: colors.accent, borderRadius: 10},
-discountButton2: {paddingVertical: 4,paddingHorizontal: 10, borderWidth: 1, borderColor: colors.primary, borderRadius: 10, backgroundColor: colors.primary}
+  discountButton: {paddingVertical: 4,paddingHorizontal: 20, borderWidth: 1, borderColor: colors.accent, borderRadius: 10},
+discountButton2: {paddingVertical: 4,paddingHorizontal: 20, borderWidth: 1, borderColor: colors.primary, borderRadius: 10, backgroundColor: colors.primary}
 });
 
 export default CheckoutScreen;

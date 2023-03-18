@@ -10,24 +10,8 @@ import { useStore } from "../context/StoreContext";
 
 const CustomerScreen = ({navigation, selectedCustomer}) => {
   const { 
-    createStore,
-    deleteTask,
-    stores,
-    loading,
-    createProducts,
-    products,
-    createCategories,
-    category,
-    createExpenses,
-    expenses,
-    createCustomer,
     customers,
-    createStaff,
-    staffs,
-    createList,
-    list,
-    deleteList,
-    editListQty } = useStore();
+   } = useStore();
     const [modal, toggleModal] = useState(false);
     const [customer, setCustomer] = useState('')
 
@@ -41,14 +25,14 @@ const CustomerScreen = ({navigation, selectedCustomer}) => {
       
       const renderItem = ({ item }) => (
         
-        <ListItem containerStyle={styles.list} bottomDivider onPress={()=> onSelect(item)}>
+        <ListItem containerStyle={styles.listStyle} bottomDivider onPress={()=> onSelect(item)}>
               <Avatar containerStyle={{
               
               borderStyle: 'solid',
-              borderWidth: 1,
+              borderWidth: .5,
               borderRadius: 20,
-              backgroundColor: colors.accent
-            }} size={35} icon={{ name: 'person-outline', type: 'ionicon', color: '#ffffff' }}/>
+             
+            }} size={35} source={require('../../assets/xzacto_icons/iconsstore/customers.png')}/>
           <ListItem.Content>
             <ListItem.Title style={{fontWeight:'700'}}>{item.name}</ListItem.Title>
             <ListItem.Subtitle style={{fontSize: 13, fontStyle:'italic'}}>{item.address}</ListItem.Subtitle>
@@ -87,7 +71,30 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 30
   },
-  list: {borderWidth: 2, borderRadius: 10, margin: 10, borderColor: colors.accent}
+  list: {borderWidth: 2, borderRadius: 10, margin: 10, borderColor: colors.accent},
+  listStyle: {
+    flex:1,
+    height: 75,
+    backgroundColor: colors.white, 
+    marginHorizontal: 15,
+    paddingHorizontal: 15, 
+    marginBottom: 10,
+    marginTop: 10, 
+    borderRadius: 15, 
+    flexDirection:'row', 
+    justifyContent:'space-between', 
+    paddingHorizontal: 10, 
+    alignItems:'center',
+    shadowColor: "#EBECF0",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+     
+    },
+    shadowOpacity: 0.89,
+    shadowRadius: 2,
+    elevation: 5,
+  }
 });
 
 export default CustomerScreen;

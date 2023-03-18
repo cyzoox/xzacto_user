@@ -26,31 +26,15 @@ const KEYS_TO_FILTERS = ['attendant_name'];
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 const { width, height } = Dimensions.get('window');
-const ZReadReport = ({navigation}) => {
+const ZReadReport = ({navigation, route}) => {
+  const store_info = route.params.store_info;
     const { 
-        createStore,
-        deleteTask,
-        stores,
-        loading,
-        createProducts,
-        products,
-        createCategories,
-        category,
-        createExpenses,
-        expenses,
-        createCustomer,
-        customers,
-        createStaff,
+        expenses,  
         staffs,
-        createList,
-        list,
-        deleteList,
-        editListQty,
-        createTransaction,
         transactions,
         custom_trdetails,
         getCustomTransaction,
-        onVoidTransaction, store_info } = useStore();
+        } = useStore();
         const [selectedValue, setselectedValue] = useState('Today');
         const [visible, setVisible] = useState(false);
         const [selectedstaff, setSelectedStaff] = useState('');

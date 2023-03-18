@@ -8,8 +8,11 @@ import { useStore } from "../context/StoreContext";
 import moment from 'moment'
 import formatMoney from 'accounting-js/lib/formatMoney.js'
 import Alert from "../components/Alert";
+import { useAuth } from "../context/AuthContext";
 
 const ArchiveScreen = ({navigation}) => {
+  const store_info = route.params.store_info;
+  const { user } = useAuth();
     const {archive ,archiveInfo, updateArchiveOnClear, reListArchive} = useStore();
     const [ondelete, setDelete] = useState(false);
     const [relist, setRelist] = useState(false);
@@ -18,7 +21,7 @@ const ArchiveScreen = ({navigation}) => {
       const keyExtractor = (item, index) => index.toString()
       
       const renderItem = ({ item }) => (
-        <ListItem containerStyle={{borderWidth: 2, borderRadius: 30, margin: 10, borderColor: colors.accent}} bottomDivider onPress={()=> navigation.navigate('ArchiveInfo',{archive_info : item})}>
+        <ListItem containerStyle={styles.listStyle} bottomDivider onPress={()=> navigation.navigate('ArchiveInfo',{archive_info : item})}>
           <ListItem.Content>
             <ListItem.Title style={{fontWeight:'700'}}>{moment.unix(item.timeStamp).format("MMMM DD ,YYYY hh:mm:ss a")}</ListItem.Title>
             <ListItem.Subtitle>{formatMoney(item.total, { symbol: "₱", precision: 2 })}</ListItem.Subtitle>
@@ -49,7 +52,7 @@ const ArchiveScreen = ({navigation}) => {
       }
 
       const onProceedRelist = () => {
-        reListArchive(archive)
+        reListArchive(archive, user, store_info )
         setRelist(false)
       }
 
@@ -77,6 +80,29 @@ const ArchiveScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   text: {
     fontSize: 30
+  },
+  listStyle: {
+    flex:1,
+    height: 75,
+    backgroundColor: colors.white, 
+    marginHorizontal: 15,
+    paddingHorizontal: 15, 
+    marginBottom: 10,
+    marginTop: 10, 
+    borderRadius: 15, 
+    flexDirection:'row', 
+    justifyContent:'space-between', 
+    paddingHorizontal: 10, 
+    alignItems:'center',
+    shadowColor: "#EBECF0",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+     
+    },
+    shadowOpacity: 0.89,
+    shadowRadius: 2,
+    elevation: 5,
   }
 });
 

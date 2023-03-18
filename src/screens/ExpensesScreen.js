@@ -18,12 +18,12 @@ import { ModalInputForm } from "../components/ModalInputForm";
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const ExpensesScreen = ({navigation}) => {
+const ExpensesScreen = ({navigation, route}) => {
+  const store_info = route.params.store_info;
   const {user} = useAuth();
   const {
     createExpenses,
     expenses,
-    store_info,
     staffs,
     getCustomExpense,
     stores
@@ -46,7 +46,7 @@ const ExpensesScreen = ({navigation}) => {
           setPVisible(!p_Visible);
         };
   
-  
+  console.log(expenses)
 
  const onSaveExpenses = () => {
     const date = moment().unix()
@@ -56,8 +56,8 @@ const ExpensesScreen = ({navigation}) => {
       store_id : store_info._id,
       category : 'None',
       date: moment.unix(date).format('MMMM DD, YYYY'),
-      attendant : stores[0].attendant,
-      attendant_id : stores[0].attendant_id,
+      attendant : selectStoreStaff()[0].attendant,
+      attendant_id : selectStoreStaff()[0].attendant_id,
       amount : parseFloat(amount),
       id: uuid.v4(),
       timeStamp: moment().unix(),
@@ -125,10 +125,20 @@ const getFilteredTransactions=(filter)=>{
     }
 
 }
+
+const selectStoreStaff = () => {
+  let store = []
+  stores.forEach(item => {
+    if(item._id === store_info._id){
+     store = store.concat(item)
+    }
+  });
+  return store;
+}
   
   const renderItem = ({ item }) => {
     return (
-      item.attendant_id === stores[0].attendant_id ?
+      item.attendant_id === selectStoreStaff()[0].attendant_id ?
         <View style={{ flex: 1, alignSelf: 'stretch', flexDirection: 'row', backgroundColor:colors.white }}>
         <View style={styles.cellContainer}>
         <Text style={styles.cellStyle}> {item.description}</Text>

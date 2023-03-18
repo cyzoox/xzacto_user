@@ -1,35 +1,27 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Text, StyleSheet, View, TouchableOpacity } from "react-native";
+import { Text, StyleSheet, View, TouchableOpacity,BackHandler, Alert as Alerts } from "react-native";
 import Modal from 'react-native-modal';
 import EvilIcons from 'react-native-vector-icons/EvilIcons'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
-import Feather from 'react-native-vector-icons/Feather'
 import AppHeader from "../components/AppHeader";
 import List from "../components/List";
 import Products from "../components/Products";
 import colors from "../themes/colors";
-import { Grid, Col, Row } from "react-native-easy-grid";
 import Spacer from "../components/Spacer";
 import { Button, Avatar } from "react-native-elements";
-import SearchBar from "../components/SearchBar";
 import Alert from "../components/Alert";
 import SubAlert from "../components/SubAlert";
-import { Categories } from "../components/Categories";
-import Draggable from 'react-native-draggable';
 import { useStore } from "../context/StoreContext";
 import { useAuth } from "../context/AuthContext";
 import moment from 'moment'
 import uuid from 'react-native-uuid';
 import formatMoney from 'accounting-js/lib/formatMoney.js'
 import BarcodeScanner from 'react-native-scan-barcode';
-import Camera from 'react-native-camera';
 import RNBeep from 'react-native-a-beep';
 import AlertwithChild from "../components/AlertwithChild";
 import { TextInput } from "react-native-paper";
-import Loader from "../components/Loader";
-import { RNCamera } from 'react-native-camera';
-import app from "../../getRealmApp";
-
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeScreen = ({ navigation, route }) => {
   const store_info = route.params.store_info;
@@ -47,6 +39,7 @@ const HomeScreen = ({ navigation, route }) => {
   const [discountVisible, setDiscountVisible] = useState(false)
   const [cameraType, setCameraType] = useState('back')
   const [torchMode, setTorchMode] = useState('off')
+  const [switchStore, setSwitchStore] = useState(false)
   const [selected, setSelected] = useState(0)
 
  
@@ -54,21 +47,53 @@ const HomeScreen = ({ navigation, route }) => {
   const onCancel = () => {
     setVisible(!visible)
   }
- 
-  useEffect(() => {
-    navigation.addListener('beforeRemove', (e) => {
-      e.preventDefault();
-      return
-  })
-    const date = moment().unix()
 
-    if(moment().unix() > parseInt(user.customData.privilege_due)){
-      setSubsciptionAlert(true)
-    }
-    	/* Listen to realtime cart changes */
- console.log(products_list)
-   
-  });
+  const selectStoreStaff = () => {
+    let store = []
+    stores.forEach(item => {
+      if(item._id === store_info._id){
+       store = store.concat(item)
+      }
+    });
+    return store;
+  }
+
+  const onSwitchStore = async() => {
+    await AsyncStorage.removeItem('@store');
+    await AsyncStorage.removeItem('@currency');
+
+    navigation.goBack();
+  }
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const backAction = () => {
+        Alerts.alert('Hold on!', 'Are you sure you want to go back?', [
+          {
+            text: 'Cancel',
+            onPress: () => null,
+            style: 'cancel',
+          },
+          {
+            text: 'Switch Store?',
+            onPress: () => onSwitchStore(),
+    
+          },
+          {text: 'Exit App?', onPress: () => BackHandler.exitApp()},
+        ]);
+        return true;
+      };
+    
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        backAction,
+      );
+    
+      return () => backHandler.remove();
+    }, [])
+  );
+ 
+
 
 
 
@@ -293,7 +318,7 @@ const onCancelCustomDisc = () => {
 
       }
         
-        <Products search={search} toggleSearch={toggleSearch} />
+        <Products search={search} toggleSearch={toggleSearch} store_info={selectStoreStaff()[0]}/>
         <View style={styles.bottomView}>
           <TouchableOpacity onPress={()=> setModalVisible(true)} style={styles.checkoutBtn}>
            <Text style={{fontSize: 18, fontWeight: '700', color: colors.white}}> Subtotal  {formatMoney(calculateTotal(), { symbol: "₱", precision: 2 })}</Text>

@@ -28,30 +28,26 @@ import moment from 'moment'
 import { StackActions } from '@react-navigation/native';
 
 export function DrawerContent(props) {
-  const customData = app.currentUser.customData;
+console.log(props.initialParams)
+ const store_info = props.initialParams;
   const { user, signUp, signIn, signOut, projectData  } = useAuth();
-  const {stores, store_info} = useStore();
+  // const {stores, store_info} = useStore();
   const [alerts, setAlert] = useState(false)
   const [switch_alerts, setSwitchAlert] = useState(false)
-
+  const [switchStore, setSwitchStore] = useState(false)
   const onSwitch = async() => {
     await AsyncStorage.removeItem('@store');
     await AsyncStorage.removeItem('@currency');
+    props.navigation.goBack();
 
-
-    setSwitchAlert(false)
-    props.navigation.navigate("StoreSelect",{
-      name: "My Project",
-      projectPartition: `project=${user.id}` ,
-    });
   }
 
   const logout = async() => {
     await AsyncStorage.removeItem('@store');
     await AsyncStorage.removeItem('@currency');
-    props.navigation.popToTop()
+    
     signOut()
-  
+    
   }
 
   const onCancelAlert = () => {
@@ -72,8 +68,8 @@ export function DrawerContent(props) {
       >
         <View style={styles.userInfoSection}>
         <View style={{justifyContent:'center', alignItems:'center', marginBottom:20}}>
-          <Title style={styles.title}>{store_info.name}</Title>
-          <Title style={styles.branch_title}>{store_info.branch} Branch</Title>
+          <Title style={styles.title}>{store_info.store_info.name}</Title>
+          <Title style={styles.branch_title}>{store_info.store_info.branch} Branch</Title>
         </View>
          <View style={{borderTopWidth: 2, borderColor: colors.primary, marginRight: 15, marginBottom: 10}}/>
           <View >
@@ -88,7 +84,7 @@ export function DrawerContent(props) {
                                     }} onPress={()=> props.navigation.navigate('Attendance')}>
                                     <Image source={require('../../assets/cashier.png')} style={{width:45, height:45}}/>
               <View>
-              <Caption style={styles.caption}>{store_info.attendant === "" ? "No Attendant" : store_info.attendant}</Caption>
+              <Caption style={styles.caption}>{store_info.store_info.attendant === "" ? "No Attendant" : store_info.store_info.attendant}</Caption>
               <Text style={{textAlign:'center', fontSize:10, fontStyle:'italic'}}>Tap to Change</Text>
               </View>
            
@@ -98,23 +94,34 @@ export function DrawerContent(props) {
           </View>
         </View>
         <Drawer.Section style={styles.drawerSection}>
-          {/*
-  <DrawerItem
+          
+  {/* <DrawerItem
             icon={({ color, size }) => (
               <MaterialCommunityIcons
                 name="account-outline"
                 color={colors.accent}
                 size={size}
                 style={{backgroundColor: colors.white, borderRadius: 5}}
+               
               />
+            
             )}
+            onPress={()=> props.navigation.navigate('Customer')}
             label="Customers"
             labelStyle={{color: colors.white, fontSize: 16, fontWeight:'700'}}
-            onPress={() => {}}
+            
             style={{backgroundColor: colors.accent}}
+          /> */}
+         
+         <DrawerItem
+            icon={({ color, size }) => (
+              <Image source={require('../../assets/payment.png')} style={{width:30, height:35}}/>
+            )}
+          
+            labelStyle={{color: colors.statusBarCoverDark, fontSize: 16, fontWeight:'700'}}
+            onPress={()=> props.navigation.navigate('Customer')}
+            label="Customers"
           />
-          */}
-        
           <DrawerItem
             icon={({ color, size }) => (
               <Image source={require('../../assets/payment.png')} style={{width:30, height:35}}/>
@@ -142,7 +149,7 @@ export function DrawerContent(props) {
             onPress={() => props.navigation.navigate('Transactions')}
 
           />
-             <DrawerItem
+             {/* <DrawerItem
             icon={({ color, size }) => (
               <Image source={require('../../assets/sale-report.png')} style={{width:30, height:30}}/>
             )}
@@ -150,7 +157,7 @@ export function DrawerContent(props) {
             labelStyle={{color: colors.statusBarCoverDark, fontSize: 16, fontWeight:'700'}}
             onPress={() => props.navigation.navigate('ZReadReport')}
       
-          />
+          /> */}
             <DrawerItem
             icon={({ color, size }) => (
               <Image source={require('../../assets/settings.png')} style={{width:30, height:30}}/>
@@ -174,24 +181,7 @@ export function DrawerContent(props) {
             labelStyle={{color: colors.white, fontSize: 16, fontWeight:'700'}}
             style={{backgroundColor: colors.accent}}
           />*/}
-          <DrawerItem
-            icon={({ color, size }) => (
-              <Image source={require('../../assets/store.png')} style={{width:30, height:30}}/>
-            )}
-            label="Switch Store"
-            onPress={() => setSwitchAlert(true)}
-            labelStyle={{color: colors.statusBarCoverDark, fontSize: 16, fontWeight:'700'}}
-     
-          />
-           <DrawerItem
-            icon={({ color, size }) => (
-              <Image source={require('../../assets/check-out.png')} style={{width:30, height:30}}/>
-            )}
-            label="LOG OUT"
-            onPress={() => setAlert(true)}
-            labelStyle={{color: colors.statusBarCoverDark, fontSize: 16, fontWeight:'700'}}
-          
-          />
+         
         </Drawer.Section>
       {/*  <View style={{backgroundColor: colors.accent, paddingVertical: 15, marginHorizontal: 10, borderRadius: 10, flexDirection:'column'}}>
           <Text style={{textAlign:'center'}}>Subscription Expiry Date:</Text>
