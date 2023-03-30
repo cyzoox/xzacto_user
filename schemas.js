@@ -1639,7 +1639,8 @@ class TR_Details {
     addon,
     addon_price,
     addon_cost,
-    option
+    option,
+    void_reason
   }) {
     this._partition = partition;
     this._id = id;
@@ -1665,7 +1666,8 @@ class TR_Details {
     this.addon = addon,
     this.addon_price = addon_price,
     this.addon_cost = addon_cost,
-    this.option = option
+    this.option = option,
+    this.void_reason
   }
 
   
@@ -1696,7 +1698,8 @@ class TR_Details {
       addon: "string",
       addon_price: "float",
       addon_cost: "float",
-      option: "string"
+      option: "string",
+      void_reason: "string?"
     },
     primaryKey: "_id",
   };

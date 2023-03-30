@@ -745,7 +745,30 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
 
 
 
+  const onVoidSingleTransaction = async(item, reason) => {
+    const projectPOS = realmRef.current;
+    // const transaction = projectPOS.objects("Transactions");
+    // const filteredTransaction = transaction.filtered("_id == $0", item._id);
+    const tr_details = projectPOS.objects("TR_Details");
+    const filteredTrDetails = tr_details.filtered("tr_id == $0", item._id);
+    const productss = projectPOS.objects("Products");
+   
+    projectPOS.write(() => {
+      // filteredTransaction[0].status = "Voided";
+      // filteredTransaction[0].void_reason = reason;
 
+      // filteredTrDetails.forEach(items => {
+       
+        const filteredProducts = productss.filtered("store_id == $0", item.store_id);
+        const filteredProducts2 = filteredProducts.filtered("_id == $0", item.product_id);
+      
+     
+        item.status = "Voided"
+        item.void_reason = reason
+        filteredProducts2[0].stock += item.quantity;
+      // });
+      });
+  }
  
 
   const  deleteTask = (store) => {
@@ -1018,7 +1041,8 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
             inventory,
              stores,
              getCustomStore,
-             onLogIn
+             onLogIn,
+             onVoidSingleTransaction
           }}
         >
             {children}

@@ -1,19 +1,29 @@
-import React, { useEffect } from "react";
-import { Text, StyleSheet, View, TouchableOpacity,FlatList } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Text, StyleSheet, View, TouchableOpacity,FlatList, TouchableHighlight } from "react-native";
 import AppHeader from "../components/AppHeader";
 import EvilIcons from 'react-native-vector-icons/EvilIcons'
 import AntDesign from 'react-native-vector-icons/AntDesign'
 import colors from "../themes/colors";
-import { ListItem, Card } from 'react-native-elements'
+import { ListItem, Card, Overlay } from 'react-native-elements'
 import { useStore } from "../context/StoreContext";
 import formatMoney from 'accounting-js/lib/formatMoney.js'
 import {BluetoothEscposPrinter, BluetoothManager, BluetoothTscPrinter} from "react-native-bluetooth-escpos-printer";
-
+import SmoothPinCodeInput from 'react-native-smooth-pincode-input';
 import moment from 'moment'
+import AlertwithChild from "../components/AlertwithChild";
 const TransactionSetailsScreen = ({navigation, route}) => {
 const { transactions, store_info } = route.params;
-const {getTRDetails,trdetails } = useStore();
-console.log(trdetails)
+const {getTRDetails,trdetails, onVoidSingleTransaction } = useStore();
+const [reason, setReason] = useState('')
+const [alerts, alertVisible] = useState(false)
+const [pinVisible, setPinVisible] = useState(false)
+const [error, setError] = useState('')
+const [items, setItem] = useState([])
+console.log('tr',trdetails)
+
+const onCancelAlert = () => {
+  alertVisible(false)
+}
 const printReceipt = async () => {
   try {
       await BluetoothEscposPrinter.printerInit();
@@ -141,31 +151,74 @@ const printReceipt = async () => {
   },[]);
 
   const renderItem = ({ item }) => (
-    <ListItem containerStyle={{height: 50}} bottomDivider>
-               <Text>x{Math.round(item.quantity * 100) / 100}</Text>
-                <ListItem.Content >
-           
-                    <Text>{item.name}</Text>
+    item.status == "Completed" &&
+    // <ListItem containerStyle={{height: 50}} bottomDivider>
+    //            <Text>x{Math.round(item.quantity * 100) / 100}</Text>
+    //             <ListItem.Content style={{flexDirection:'row', justifyContent:'space-between'}}>
+    //                 <View>
+    //                 <Text>{item.name}</Text>
+    //                  <Text style={{color: colors.statusBarCoverDark}}>{formatMoney(item.quantity *( item.sprice + item.addon_price), { symbol: "₱", precision: 2 })}</Text>
+    //                 </View>
+                 
                    
-                    <ListItem.Subtitle>
-                    <Text>with {item.addon}, {item.option}</Text>
+    //                 <ListItem.Subtitle>
+    //                 <Text>with {item.addon}, {item.option}</Text>
                     
-                    </ListItem.Subtitle>
-                </ListItem.Content>
-                <Text style={{color: colors.statusBarCoverDark}}>{formatMoney(item.quantity *( item.sprice + item.addon_price), { symbol: "₱", precision: 2 })}</Text>
-            </ListItem>
+    //                 </ListItem.Subtitle>
+                   
+    //             </ListItem.Content>
+                
+    //         </ListItem>
+    <View style={{flexDirection:'row', justifyContent:'space-between', marginHorizontal: 10, marginVertical: 10}}>
+      <View style={{flexDirection:"row"}}>
+      <Text style={{textAlign:"center", paddingRight: 30}}>x{Math.round(item.quantity * 100) / 100}</Text>
+        <View style={{flexDirection:'column'}}>
+          <Text>{item.name}</Text>
+          <Text>with {item.addon}, {item.option}, {item.status}</Text>
+        </View>
+      </View>
+      
+        <Text style={{color: colors.statusBarCoverDark,textAlign:"center"}}>{formatMoney(item.quantity *( item.sprice + item.addon_price), { symbol: "₱", precision: 2 })}</Text>
+        <TouchableOpacity  onPress={()=> { alertVisible(true), setItem(item)}} style={{width: 50,backgroundColor: colors.red, justifyContent:'center', alignItems:'center', paddingHorizontal:5, borderRadius: 15, height: 30}}>
+              <Text style={{fontSize:10, color: colors.white}}>Void</Text>
+            </TouchableOpacity>
+    </View>
   )
 
   const calculateTotal = () => {
     let total = 0;
     trdetails.forEach(list => {
-            total += list.quantity * (list.sprice + list.addon_price)
+      if(list.status == "Completed"){
+        total += list.quantity * (list.sprice + list.addon_price)
+      }
+           
     });
    return total;
 }
 
+const onProceed = () => {
+  onVoidSingleTransaction(items, reason)
+}
+
   return (
-      <View>
+      <View style={{flex:1}}>
+        <AlertwithChild visible={alerts} onCancel={onCancelAlert} onProceed={()=> onProceed()} title="Void Item?"  confirmTitle="PROCEED">
+          <View style={{flexDirection:'column',justifyContent:'space-evenly', marginVertical: 2, alignItems:'center'}}>
+              <Text>Please select reason: </Text>
+              <View style={{flexDirection:'row', marginTop: 10}}>
+              <TouchableOpacity style={reason === 'Return' ?styles.selectedBtn: styles.reasonBTn} onPress={()=> setReason('Return')}>
+                <Text style={reason === 'Return' ?{fontSize: 13, color: colors.white, fontWeight:'bold'}: {fontSize: 13, color: colors.black, fontWeight:'bold'}}>Return</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={reason === 'Change Item' ?styles.selectedBtn:styles.reasonBTn} onPress={()=> setReason('Change Item')}>
+                <Text style={reason === 'Change Item' ?{fontSize: 12, color: colors.white, fontWeight:'bold'}: {fontSize: 12, color: colors.black, fontWeight:'bold'}}>Change Item</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={reason === 'Refunded' ?styles.selectedBtn:styles.reasonBTn} onPress={()=> setReason('Refunded')}>
+                <Text style={reason === 'Refunded' ?{fontSize: 13, color: colors.white, fontWeight:'bold'}:{fontSize: 13, color: colors.black, fontWeight:'bold'}}>Refunded</Text>
+              </TouchableOpacity>
+              </View>
+             
+            </View>
+          </AlertwithChild>
           <AppHeader 
             centerText="Transaction Details"
             leftComponent={
@@ -192,9 +245,14 @@ const printReceipt = async () => {
           
           <ListItem bottomDivider>
                 <ListItem.Content style={{flexDirection:'row', justifyContent:'space-between'}}>
-                    <Text style={{fontWeight:'bold'}}>Qty</Text>
+
+                  <View style={{flexDirection:"row"}}>
+                  <Text style={{fontWeight:'bold', paddingRight: 20}}>Qty</Text>
                     <Text style={{fontWeight:'bold'}}>Product</Text>
+                  </View>
+                   
                     <Text style={{fontWeight:'bold'}}>Total</Text>
+                    <Text style={{fontWeight:'bold'}}>Action</Text>
                 </ListItem.Content>
                
             </ListItem>
@@ -238,7 +296,55 @@ const printReceipt = async () => {
                       <Text >{formatMoney((calculateTotal()-transactions.discount)*0.12, { symbol: "₱", precision: 2 })}</Text>
                   </ListItem.Content>
                 </ListItem>
+                <View style={{margin: 15}}>
+                  <Text style={{textAlign:"center"}}>Voided Products</Text>
+
+                  <View style={{flexDirection:"row", justifyContent:"space-between", marginVertical: 10}}>
+                    <Text style={{flex: 2}}>Item</Text>
+                    <Text style={{flex: 1}}>Total</Text>
+                    <Text >Reason</Text>
+                  </View>
+                  <View>
+                    {
+                      trdetails.map(item => 
+                        item.status == "Voided" &&
+                        <View style={{flexDirection:"row", justifyContent:"space-between", marginVertical: 10}}>
+                        <Text style={{textAlign:'left', flex: 2}}>x{item.quantity}  {item.name}</Text>
+                        <Text style={{flex:1, textAlign:'center'}}>{formatMoney(item.quantity *( item.sprice + item.addon_price), { symbol: "₱", precision: 2 })}</Text>
+                        <Text style={{flex:1, textAlign:'center'}}>{item.void_reason}</Text>
+                      </View>
+                      )
+                    }
+                  </View>
+                </View>
             </Card>
+            {/* <Overlay  overlayStyle={{borderRadius: 25, margin: 30, width: '75%'}} isVisible={pinVisible} onBackdropPress={setPinVisible}>
+            <Text style={{textAlign:'center', fontSize: 18, fontWeight:'bold', marginVertical: 10}}>Enter store PIN</Text>
+            <View style={{padding: 20}}>
+            <SmoothPinCodeInput password mask="﹡"
+              cellStyle={{
+                borderWidth: 1,
+                borderColor: 'gray',
+                borderRadius: 15
+              }}
+              cellSize={35}
+            codeLength={6}
+            value={code}
+            onTextChange={code => setCode(code)}/>
+               <TouchableHighlight
+                    style={{ ...styles.openButton, backgroundColor: colors.primary, marginVertical: 20 }}
+
+                    onPress={()=> checkPIN()}
+                    >
+                    <Text style={styles.textStyle}>Proceed </Text>
+                    </TouchableHighlight>
+                    {
+                error.length !== 0?
+                <Text style={{textAlign:'center', color: colors.red}}>{error}</Text> : null
+            }
+            </View>
+            
+        </Overlay> */}
       </View>
   );
 };
@@ -246,7 +352,20 @@ const printReceipt = async () => {
 const styles = StyleSheet.create({
   text: {
     fontSize: 30
-  }
+  },
+  reasonBTn: {padding: 6, borderColor: colors.black, borderWidth:1,backgroundColor:colors.white, borderRadius: 15, marginVertical: 10, marginHorizontal: 2 },
+  selectedBtn: {padding: 6, borderColor: colors.primary, borderWidth:1,backgroundColor:colors.primary, borderRadius: 15, marginVertical: 10, marginHorizontal: 2 },
+  openButton: {
+    backgroundColor: "#F194FF",
+    borderRadius: 20,
+    padding: 8,
+    elevation: 2
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center"
+  },
 });
 
 export default TransactionSetailsScreen;

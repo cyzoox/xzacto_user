@@ -4,15 +4,11 @@ import AppHeader from "../components/AppHeader";
 import Spacer from "../components/Spacer";
 import { ModalInputForm } from "../components/ModalInputForm";
 import EvilIcons from 'react-native-vector-icons/EvilIcons'
-import AntDesign from 'react-native-vector-icons/AntDesign'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-import Fontisto from 'react-native-vector-icons/Fontisto'
 import colors from "../themes/colors";
 import { ListItem, Avatar, Overlay, Button } from 'react-native-elements'
 import { useStore } from "../context/StoreContext";
-import FilterModal from "../components/FilterModal";
 import moment from 'moment'
-import { Card } from "react-native-paper";
 import formatMoney from 'accounting-js/lib/formatMoney.js'
 import DataTable from "../components/DataTable";
 import { Grid, Col, Row } from "react-native-easy-grid";
@@ -20,10 +16,10 @@ import { theme } from "../constants";
 import SearchInput, { createFilter } from 'react-native-search-filter';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import Feather from 'react-native-vector-icons/Feather'
-import Alert from "../components/Alert";
 import { useFocusEffect } from '@react-navigation/native';
 import AlertwithChild from "../components/AlertwithChild";
 const KEYS_TO_FILTERS = ['status'];
+
 import SmoothPinCodeInput from 'react-native-smooth-pincode-input';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
