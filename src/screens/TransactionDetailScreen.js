@@ -174,7 +174,7 @@ const printReceipt = async () => {
       <Text style={{textAlign:"center", paddingRight: 30}}>x{Math.round(item.quantity * 100) / 100}</Text>
         <View style={{flexDirection:'column'}}>
           <Text>{item.name}</Text>
-          <Text>with {item.addon}, {item.option}, {item.status}</Text>
+          <Text>with {item.addon}, {item.option}</Text>
         </View>
       </View>
       

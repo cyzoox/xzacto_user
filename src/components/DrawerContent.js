@@ -149,6 +149,15 @@ console.log(props.initialParams)
             onPress={() => props.navigation.navigate('Transactions')}
 
           />
+            <DrawerItem
+            icon={({ color, size }) => (
+              <Image source={require('../../assets/fintech.png')} style={{width:30, height:30}}/>
+            )}
+            label="Delivery Request"
+            labelStyle={{color: colors.statusBarCoverDark, fontSize: 16, fontWeight:'700'}}
+            onPress={() => props.navigation.navigate('DeliveryRequest')}
+
+          />
              {/* <DrawerItem
             icon={({ color, size }) => (
               <Image source={require('../../assets/sale-report.png')} style={{width:30, height:30}}/>

@@ -1,6 +1,6 @@
 import { Item } from 'native-base';
 import React, { useContext, useRef, useState, useEffect  } from 'react';
-import { Categories, Customers, Expenses, Product, Staffs, List, Transactions, TR_Details, Archive, ArchiveInfo, AttendanceLogs, Credit_Logs, Credit_List, BO, Returned, Discount, Products, Settings, Inventory, Addon, Option, Stores } from '../../schemas';
+import { Categories, Customers, Expenses, Product, Staffs, List, Transactions, TR_Details, Archive, ArchiveInfo, AttendanceLogs, Credit_Logs, Credit_List, BO, Returned, Discount, Products, Settings, Inventory, Addon, Option, Stores, DeliveryRequest, DeliveryRequestDetails, WarehouseProducts, DeliveryReport, DeliveryReportSummary, DeliveryReportWarehouse, TransferLogs } from '../../schemas';
 import { useAuth } from './AuthContext';
 import uuid from 'react-native-uuid';
 import moment from 'moment';
@@ -37,6 +37,9 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
     const [option, setOption] = useState([]);
     const [addon, setAddon] = useState([]);
     const [stores, setStores] = useState([]);
+    const [delivery_request, setDeliveryRequests] = useState([])
+    const [delivery_req_details, setDeliveryRequestDetails] = useState([])
+
   useEffect(() => {
 
     const OpenRealmBehaviorConfiguration = {
@@ -64,7 +67,15 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
         Inventory.schema,
         Addon.schema,
         Option.schema,
-        Stores.schema
+        Stores.schema,
+        DeliveryRequest.schema,
+        DeliveryRequestDetails.schema,
+        WarehouseProducts.schema,
+        DeliveryReport.schema,
+        DeliveryReportSummary.schema,
+        DeliveryReportWarehouse.schema,
+        TransferLogs.schema
+
       ],
       sync: {
         user: user,
@@ -207,6 +218,23 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
       setOption([...syncOption]);
       syncOption.addListener(() => {
         setOption([...syncOption]);
+      });
+
+      const syncDeliveryRequests = projectPOS.objects("DeliveryRequest");
+      let sortDeliveryRequests= syncDeliveryRequests.sorted("timeStamp");
+      setDeliveryRequests([...sortDeliveryRequests]);
+      sortDeliveryRequests.addListener(() => {
+        setDeliveryRequests([...sortDeliveryRequests]);
+     
+      });
+
+      const syncDeliveryRequestDetails = projectPOS.objects("DeliveryRequestDetails");
+      // const filteredDeliveryRequestDetails = syncDeliveryRequestDetails.filtered("status == $0","Pending");
+      let sortDeliveryRequestDetails= syncDeliveryRequestDetails.sorted("pr_name");
+      setDeliveryRequestDetails([...sortDeliveryRequestDetails]);
+      sortDeliveryRequestDetails.addListener(() => {
+        setDeliveryRequestDetails([...sortDeliveryRequestDetails]);
+     
       });
 
     {
@@ -489,6 +517,101 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
     }); 
   };
 
+  const ReturnSingleItem = (items, reason, qty, req) => {
+    const projectPOS = realmRef.current;
+    const request = projectPOS.objects("DeliveryRequest"); 
+    const request2 = projectPOS.objects("DeliveryRequestDetails"); 
+
+    const filteredRequest = request.filtered("_id == $0", req._id);
+    const filteredRequest2 = request2.filtered("_id == $0", items._id);
+   
+   
+    
+ 
+    let req_details = {
+      partition: `project=${user.id}`,
+      id: uuid.v4(),
+      pr_id:items.pr_id,
+      request_id: req._id,
+      pr_name: items.pr_name,
+      pr_category:items.pr_category,
+      stock: parseFloat(qty),
+      store_id: items.store_id,
+      status: "Returned",
+      pr_oprice: items.pr_oprice,
+      pr_sprice:items.pr_sprice,
+      brand: items.brand,
+      unit: items.unit,
+      store: items.store,
+      img:items.img,
+      withAddons: false,
+      withVariants: false,
+      withOptions: false,
+      sku:'',
+      return_reason: reason,
+      processed_by: "Admin"
+    }
+    projectPOS.write(() => {
+      filteredRequest[0].total -= items.pr_sprice * parseFloat(qty)
+      filteredRequest2[0].stock -=  parseFloat(qty)
+
+      // Create a new task in the same partition -- that is, in the same project.
+      projectPOS.create(
+        "DeliveryRequestDetails",
+        new DeliveryRequestDetails(req_details)
+      );
+      
+    });
+  };
+
+
+  const ReturnDelivery = ( req, reason ) => {
+    
+    const projectPOS = realmRef.current;
+    projectPOS.write(() => {
+     
+      const request = projectPOS.objects("DeliveryRequest"); 
+      const filteredRequest = request.filtered("_id == $0", req._id);
+
+        filteredRequest[0].processed_by = "Admin"
+        filteredRequest[0].return_reason = reason
+        filteredRequest[0].status = "Returned"
+      
+    });
+  };
+
+  const onSendProducts = ( productss, items ) => {
+    
+    const projectPOS = realmRef.current;
+    projectPOS.write(() => {
+      const products = projectPOS.objects("Products");
+      const products2 = projectPOS.objects("WarehouseProducts"); 
+      const request = projectPOS.objects("DeliveryRequest"); 
+
+      const filteredProducts2 = products.filtered("pr_id == $0", productss.pr_id);
+      const filteredProducts3 = filteredProducts2.filtered("store_id == $0", productss.store_id);
+      const filteredRequest = request.filtered("_id == $0", items.request_id);
+
+      const filteredProducts4 = products2.filtered("_id == $0", productss.pr_id);
+
+      if(filteredProducts3.length == 0){
+        filteredProducts4[0].stock -= productss.stock;
+        filteredRequest[0].status = "Accepted"
+        filteredRequest[0].processed_by = "Admin"
+        items.status = "Accepted"
+        projectPOS.create(
+          "Products",
+          new Products(productss)
+        );
+      }else{
+        items.status = "Accepted"
+        filteredRequest[0].status = "Accepted"
+        filteredRequest[0].processed_by = "Admin"
+        filteredProducts4[0].stock -= productss.stock;
+        filteredProducts3[0].stock += productss.stock;
+      }
+    });
+  };
 
   const createTransaction = ( lists, transaction ) => {
     const projectPOS = realmRef.current;
@@ -985,6 +1108,62 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
  
   }
 
+  const createWarehouseDeliveryReport = ( drw ) => {
+    const projectPOS = realmRef.current;
+    projectPOS.write(() => {
+      // Create a new task in the same partition -- that is, in the same project.
+      projectPOS.create(
+        "DeliveryReportWarehouse",
+        new DeliveryReportWarehouse(drw)
+      );
+    });
+  };
+
+  const createDeliverySummary= ( drs ) => {
+    const projectPOS = realmRef.current;
+    projectPOS.write(() => {
+      // Create a new task in the same partition -- that is, in the same project.
+      projectPOS.create(
+        "DeliveryReportSummary",
+        new DeliveryReportSummary(drs)
+      );
+    });
+  };
+
+  const createStoreDeliverySummary= ( drs ) => {
+    const projectPOS = realmRef.current;
+    projectPOS.write(() => {
+      // Create a new task in the same partition -- that is, in the same project.
+      projectPOS.create(
+        "DeliveryStoreSummary",
+        new DeliveryStoreSummary(drs)
+      );
+    });
+  };
+  
+  const createDeliveryReport = ( drs ) => {
+    const projectPOS = realmRef.current;
+    projectPOS.write(() => {
+      // Create a new task in the same partition -- that is, in the same project.
+      projectPOS.create(
+        "DeliveryReport",
+        new DeliveryReport(drs)
+      );
+    });
+  };
+
+   const createtransferLogs = ( logs ) => {
+
+    const projectPOS = realmRef.current;
+    projectPOS.write(() => {
+      // Create a new task in the same partition -- that is, in the same project.
+      projectPOS.create(
+        "TransferLogs",
+        new TransferLogs(logs)
+      );
+    });
+  };
+
     return(
         <StoreContext.Provider
         value={{
@@ -1042,7 +1221,12 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
              stores,
              getCustomStore,
              onLogIn,
-             onVoidSingleTransaction
+             onVoidSingleTransaction,
+             delivery_request,
+             delivery_req_details,
+             ReturnDelivery,
+             ReturnSingleItem,
+             onSendProducts
           }}
         >
             {children}

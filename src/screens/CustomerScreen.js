@@ -32,7 +32,7 @@ const CustomerScreen = ({navigation, selectedCustomer}) => {
               borderWidth: .5,
               borderRadius: 20,
              
-            }} size={35} source={require('../../assets/xzacto_icons/iconsstore/customers.png')}/>
+            }} size={35} source={require('../../assets/xzacto_icons/iconsstore/customer.png')}/>
           <ListItem.Content>
             <ListItem.Title style={{fontWeight:'700'}}>{item.name}</ListItem.Title>
             <ListItem.Subtitle style={{fontSize: 13, fontStyle:'italic'}}>{item.address}</ListItem.Subtitle>

@@ -36,7 +36,7 @@ const renderItem = ({ item }) => (
   <ListItem underlayColor={'#fffff'} 
   // onPress={()=> navigation.navigate('CreditDetails', {customer: item, store: STORE})}
    bottomDivider containerStyle={styles.listStyle}>
-         <Avatar title={item.name[0]} size={60} source={require('../../assets/xzacto_icons/iconsstore/customers.png')}/>
+         <Avatar title={item.name[0]} size={60} source={require('../../assets/xzacto_icons/iconsstore/customer.png')}/>
     <ListItem.Content>
       <ListItem.Title>{item.name}</ListItem.Title>
       <ListItem.Subtitle>{item.address}</ListItem.Subtitle>

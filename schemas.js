@@ -143,61 +143,6 @@ class List {
   };
 }
 
-class WarehouseProducts {
-  /**
-   *
-   * @param {string} name The name of the task
-   * @param {string status The status of the task. Default value is "Open"
-   * @param {ObjectId} id The ObjectId to create this task with
-   */
-  constructor({
-    name,
-    partition,
-    brand,
-    oprice,
-    sprice,
-    unit,
-    category,
-    owner_id,
-    stock,
-    id,
-    sku,
-    img,
-  }) {
-    this._partition = partition;
-    this._id = id;
-    this.name = name;
-    this.brand = brand;
-    this.oprice = oprice;
-    this.sprice = sprice;
-    this.unit = unit;
-    this.category = category;
-    this.owner_id = owner_id;
-    this.stock = stock;
-    this.sku = sku;
-    this.img = img
-  }
-
-  
-  static schema = {
-    name: "WarehouseProducts",
-    properties: {
-      _id: "string",
-      _partition: "string",
-      name: "string",
-      brand: "string",
-      oprice: "float",
-      sprice: "float",
-      unit: "string",
-      category: "string",
-      owner_id: "string",
-      stock: "float",
-      sku: 'string',
-      img: 'string'
-    },
-    primaryKey: "_id",
-  };
-}
 
 class Products {
   /**
@@ -2143,6 +2088,210 @@ class ArchiveInfo {
   };
 }
 
+
+class DeliveryRequest {
+  /**
+   *
+   * @param {string} name The name of the task
+   * @param {string status The status of the task. Default value is "Open"
+   * @param {ObjectId} id The ObjectId to create this task with
+   */
+  constructor({
+    partition,
+    id,
+    timeStamp,
+    year,
+    year_month,
+    year_week,
+    date,
+    store,
+    store_id,
+    status,
+    total,
+    return_reason,
+    processed_by
+  }) {
+    this._partition = partition;
+    this._id = id;
+    this.timeStamp = timeStamp;
+    this.year = year;
+    this.year_month = year_month;
+    this.year_week = year_week;
+    this.date = date;
+    this.store = store;
+    this.store_id = store_id;
+    this.status = status;
+    this.total = total;
+    this.return_reason = return_reason;
+    this.processed_by = processed_by;
+  }
+
+  
+  static schema = {
+    name: "DeliveryRequest",
+    properties: {
+      _id: "string",
+      _partition: "string",
+      timeStamp: "int?",
+      year: "string?",
+      year_month: "string?",
+      year_week: "string?",
+      date: "string?",
+      store: "string?",
+      store_id: "string?",
+      status: "string?",
+      total : "float?",
+      return_reason: "string?",
+      processed_by: "string?",
+
+    },
+    primaryKey: "_id",
+  };
+}
+
+
+class DeliveryRequestDetails {
+  /**
+   *
+   * @param {string} name The name of the task
+   * @param {string status The status of the task. Default value is "Open"
+   * @param {ObjectId} id The ObjectId to create this task with
+   */
+  constructor({
+    partition,
+    id,
+    request_id,
+    pr_id,
+    pr_name,
+    pr_category,
+    store_id,
+    stock,
+    status,
+    pr_oprice,
+    pr_sprice,
+    brand,
+    unit,
+    store,
+    img,
+    withAddons,
+    withVariants,
+    withOptions,
+    sku,
+    return_reason,
+    processed_by
+
+  }) {
+    this._partition = partition;
+    this._id = id;
+    this.request_id = request_id;
+    this.pr_id = pr_id;
+    this.pr_name = pr_name;
+    this.pr_category = pr_category;
+    this.store_id = store_id;
+    this.stock = stock;
+    this.status = status;
+    this.pr_oprice = pr_oprice;
+    this.pr_sprice = pr_sprice;
+    this.brand = brand;
+    this.unit = unit;
+    this.store = store;
+    this.img = img;
+    this.withAddons = withAddons;
+    this.withVariants = withVariants;
+    this.withOptions = withOptions;
+    this.sku = sku;
+    this.return_reason = return_reason;
+    this.processed_by = processed_by;
+  }
+
+  
+  static schema = {
+    name: "DeliveryRequestDetails",
+    properties: {
+      _id: "string",
+      _partition: "string",
+      request_id: "string?",
+      pr_id: "string?",
+      pr_name: "string?",
+      pr_category: "string?",
+      store_id: "string?",
+      stock: "float?",
+      status: "string?",
+      pr_sprice: "float?",
+      pr_oprice: "float?",
+      brand: "string?",
+      unit: "string?",
+      store: "string?",
+      img: "string?",
+      withAddons: "bool?",
+      withVariants: "bool?",
+      withOptions: "bool?",
+      sku: "string?",
+      return_reason: "string?",
+      processed_by: "string?",
+    },
+    primaryKey: "_id",
+  };
+}
+
+
+class WarehouseProducts {
+  /**
+   *
+   * @param {string} name The name of the task
+   * @param {string status The status of the task. Default value is "Open"
+   * @param {ObjectId} id The ObjectId to create this task with
+   */
+  constructor({
+    name,
+    partition,
+    brand,
+    oprice,
+    sprice,
+    unit,
+    category,
+    owner_id,
+    stock,
+    id,
+    sku,
+    img,
+  }) {
+    this._partition = partition;
+    this._id = id;
+    this.name = name;
+    this.brand = brand;
+    this.oprice = oprice;
+    this.sprice = sprice;
+    this.unit = unit;
+    this.category = category;
+    this.owner_id = owner_id;
+    this.stock = stock;
+    this.sku = sku;
+    this.img = img
+  }
+
+  
+  static schema = {
+    name: "WarehouseProducts",
+    properties: {
+      _id: "string",
+      _partition: "string",
+      name: "string",
+      brand: "string",
+      oprice: "float",
+      sprice: "float",
+      unit: "string",
+      category: "string",
+      owner_id: "string",
+      stock: "float",
+      sku: 'string',
+      img: 'string'
+    },
+    primaryKey: "_id",
+  };
+}
+
+
 export { 
          Stores, 
          Products, 
@@ -2179,5 +2328,8 @@ export {
          ArchiveInfo,
          AttendanceLogs,
          Credit_List,
-         Credit_Logs
+         Credit_Logs,
+         DeliveryRequest,
+         DeliveryRequestDetails,
+         
         };
