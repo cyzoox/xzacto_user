@@ -1226,7 +1226,10 @@ const StoreProvider = ({ children, projectPartition, store_info }) => {
              delivery_req_details,
              ReturnDelivery,
              ReturnSingleItem,
-             onSendProducts
+             onSendProducts,
+             createtransferLogs,
+             createDeliveryReport,
+             createStoreDeliverySummary
           }}
         >
             {children}

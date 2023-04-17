@@ -40,6 +40,9 @@ const DeliveryRequestDetails = ({navigation, route}) => {
     const [pinVisible, setPinVisible] = useState(false)
     const [error, setError] = useState('')
     const [code, setCode] = useState('')
+    const [returnPinVisible, setReturnPinVisible] = useState(false)
+    const [singleReturnPinVisible, setSingleReturnPinVisible] = useState(false)
+
     const {  delivery_request,
         delivery_req_details,
       
@@ -86,7 +89,7 @@ const DeliveryRequestDetails = ({navigation, route}) => {
     }
     
 
-    const onReturnDelivery = () => {
+    const onReturnValidateDelivery = () => {
       // if(errorText.length === 0){
       //   setErrorText('Please fill in return reason.')
       //   return;
@@ -187,7 +190,7 @@ const DeliveryRequestDetails = ({navigation, route}) => {
        return total;
     }
 
-    const onReturnSingleItem = () => {
+    const onSingleReturnValidateDelivery = () => {
       if(reason1.length === 0){
         setErrorText1('Please fill in return reason.')
         return;
@@ -466,17 +469,10 @@ const DeliveryRequestDetails = ({navigation, route}) => {
             <TouchableOpacity onPress={()=> setPinVisible(true)} style={styles.btn}>
                 <Text style={{textAlign:"center", fontSize: 18,color: colors.white, fontWeight:'bold'}}>Accept</Text>
             </TouchableOpacity>
-            <ModalInputForm
-             displayComponent={
-                 <>
-             <TouchableOpacity onPress={()=> setOverlayVisible(true)} style={[styles.btn, {backgroundColor: colors.red, width:'93%'}]}>
+            <TouchableOpacity onPress={()=> setOverlayVisible(true)} style={styles.btn}>
                 <Text style={{textAlign:"center", fontSize: 18,color: colors.white, fontWeight:'bold'}}>Return</Text>
             </TouchableOpacity>
-                 </>
-             }
-             overlays ={overlayVisible}
-             title="Return Product" 
-          >
+            <Overlay overlayStyle={{width: '70%', borderRadius: 10}} isVisible={overlayVisible} onBackdropPress={setOverlayVisible}>
               <Text style={{textAlign:'center'}}>
                 Are you sure you want to return this delivery request?
               </Text>
@@ -497,12 +493,12 @@ const DeliveryRequestDetails = ({navigation, route}) => {
                 <Button buttonStyle={{backgroundColor: colors.red}} title="Cancel" onPress={()=> setOverlayVisible(false)}/>
             </View>
             <View  style={{flex: 1, marginHorizontal: 15}} >
-             <Button buttonStyle={{backgroundColor: colors.green}}  title="Save" onPress={()=>  reason.length !== 0 ?  onReturnDelivery() : setErrorText('Please fill in return reason.')}/>
+             <Button buttonStyle={{backgroundColor: colors.green}}  title="Save" onPress={()=>   reason.length !== 0 ?  setReturnPinVisible(true) : setErrorText('Please fill in return reason.')}/>
             </View>
         </View>
               </View>
             
-           </ModalInputForm>
+           </Overlay>
            
         </ScrollView>
         </View>
@@ -519,13 +515,62 @@ const DeliveryRequestDetails = ({navigation, route}) => {
             codeLength={6}
             value={code}
             onTextChange={code => setCode(code)}/>
+              <View style={{flexDirection:"row", marginVertical: 20}}>
+            <TouchableHighlight
+                    style={{ ...styles.openButton, backgroundColor: colors.red , marginHorizontal:2}}
+
+                    onPress={()=> setPinVisible(false)}
+                    >
+                    <Text style={styles.textStyle}>Cancel </Text>
+                    </TouchableHighlight>
                <TouchableHighlight
-                    style={{ ...styles.openButton, backgroundColor: colors.primary, marginVertical: 20 }}
+                    style={{ ...styles.openButton, backgroundColor: colors.primary, marginHorizontal:2 }}
 
                     onPress={()=> onAcceptRequest()}
                     >
                     <Text style={styles.textStyle}>Proceed </Text>
                     </TouchableHighlight>
+            </View>
+            
+                    {
+                error.length !== 0?
+                <Text style={{textAlign:'center', color: colors.red}}>{error}</Text> : null
+            }
+            </View>
+            
+        </Overlay>
+
+        <Overlay  overlayStyle={{borderRadius: 25,  width: '75%'}} isVisible={returnPinVisible} onBackdropPress={setReturnPinVisible}>
+            <Text style={{textAlign:'center', fontSize: 18, fontWeight:'bold', marginVertical: 10}}>Enter store PIN</Text>
+            <View style={{padding: 20}}>
+            <SmoothPinCodeInput password mask="﹡"
+              cellStyle={{
+                borderWidth: 1,
+                borderColor: 'gray',
+                borderRadius: 15,
+                marginBottom: 15
+              }}
+              cellSize={35}
+            codeLength={6}
+            value={code}
+            onTextChange={code => setCode(code)}/>
+            <View style={{flexDirection:"row", marginVertical: 20}}>
+            <TouchableHighlight
+                    style={{ ...styles.openButton, backgroundColor: colors.red , marginHorizontal:2}}
+
+                    onPress={()=> setReturnPinVisible(false)}
+                    >
+                    <Text style={styles.textStyle}>Cancel </Text>
+                    </TouchableHighlight>
+               <TouchableHighlight
+                    style={{ ...styles.openButton, backgroundColor: colors.primary, marginHorizontal:2 }}
+
+                    onPress={()=> onReturnValidateDelivery()}
+                    >
+                    <Text style={styles.textStyle}>Proceed </Text>
+                    </TouchableHighlight>
+            </View>
+           
                     {
                 error.length !== 0?
                 <Text style={{textAlign:'center', color: colors.red}}>{error}</Text> : null
@@ -534,6 +579,43 @@ const DeliveryRequestDetails = ({navigation, route}) => {
             
         </Overlay>
         
+        <Overlay  overlayStyle={{borderRadius: 25, margin: 30, width: '75%'}} isVisible={singleReturnPinVisible} onBackdropPress={setSingleReturnPinVisible}>
+            <Text style={{textAlign:'center', fontSize: 18, fontWeight:'bold', marginVertical: 10}}>Enter store PIN</Text>
+            <View style={{padding: 20}}>
+            <SmoothPinCodeInput password mask="﹡"
+              cellStyle={{
+                borderWidth: 1,
+                borderColor: 'gray',
+                borderRadius: 15
+              }}
+              cellSize={35}
+            codeLength={6}
+            value={code}
+            onTextChange={code => setCode(code)}/>
+                 <View style={{flexDirection:"row", marginVertical: 20}}>
+            <TouchableHighlight
+                    style={{ ...styles.openButton, backgroundColor: colors.red, marginHorizontal:2 }}
+
+                    onPress={()=> setSingleReturnPinVisible(false)}
+                    >
+                    <Text style={styles.textStyle}>Cancel </Text>
+                    </TouchableHighlight>
+               <TouchableHighlight
+                    style={{ ...styles.openButton, backgroundColor: colors.primary, marginHorizontal:2 }}
+
+                    onPress={()=> onSingleReturnValidateDelivery()}
+                    >
+                    <Text style={styles.textStyle}>Proceed </Text>
+                    </TouchableHighlight>
+            </View>
+            
+                    {
+                error.length !== 0?
+                <Text style={{textAlign:'center', color: colors.red}}>{error}</Text> : null
+            }
+            </View>
+            
+        </Overlay>
 
        <Overlay overlayStyle={{width: '70%', borderRadius: 10}} isVisible={visible3} onBackdropPress={setVisible3}>
        <Text style={{textAlign:'center', fontSize:18, marginBottom: 10}}>
@@ -570,7 +652,7 @@ const DeliveryRequestDetails = ({navigation, route}) => {
             <Button buttonStyle={{backgroundColor: colors.red}} title="Cancel" onPress={()=> setVisible3(false)}/>
         </View>
         <View  style={{flex: 1, marginHorizontal: 15}} >
-         <Button buttonStyle={{backgroundColor: colors.primary}}  title="Save" onPress={()=> onReturnSingleItem()}/>
+         <Button buttonStyle={{backgroundColor: colors.primary}}  title="Save" onPress={()=> setSingleReturnPinVisible(true)}/>
         </View>
     </View>
           </View>
@@ -594,7 +676,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.89,
     shadowRadius: 2,
     elevation: 2,
-  }
+  },
+  reasonBTn: {padding: 6, borderColor: colors.black, borderWidth:1,backgroundColor:colors.white, borderRadius: 15, marginVertical: 10, marginHorizontal: 2 },
+  selectedBtn: {padding: 6, borderColor: colors.primary, borderWidth:1,backgroundColor:colors.primary, borderRadius: 15, marginVertical: 10, marginHorizontal: 2 },
+  openButton: {
+    flex: 1,
+    backgroundColor: "#F194FF",
+    borderRadius: 20,
+    padding: 8,
+    elevation: 2
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center"
+  },
 });
 
 export default DeliveryRequestDetails;
